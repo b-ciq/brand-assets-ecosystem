@@ -1,0 +1,25 @@
+{
+  "name": "@brand-assets/shared",
+  "version": "1.0.0",
+  "description": "Shared types and SDK for brand assets ecosystem",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "exports": {
+    "./types": {
+      "types": "./types/index.ts",
+      "default": "./types/index.ts"
+    },
+    "./sdk": {
+      "types": "./sdk/index.ts", 
+      "default": "./sdk/index.ts"
+    }
+  }
+}
