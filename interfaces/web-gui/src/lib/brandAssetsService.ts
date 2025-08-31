@@ -1,7 +1,11 @@
 import { BrandAssetsMCP } from './brandAssetsMCP';
 import { Asset } from '@/types/asset';
 
-const mcp = new BrandAssetsMCP();
+// Initialize MCP client with development server paths
+const mcp = new BrandAssetsMCP({
+  mcpServerPath: '../../core-mcp-dev/server.py',
+  cliWrapperPath: '../../core-mcp-dev/cli_wrapper.py'
+});
 
 export interface SimpleSearchResponse {
   assets: Asset[];

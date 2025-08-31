@@ -22,19 +22,27 @@ interface MCPResponse {
   error?: string;
 }
 
+interface BrandAssetsMCPConfig {
+  mcpServerPath?: string;
+  cliWrapperPath?: string;
+}
+
 export class BrandAssetsMCP {
   private mcpPath: string;
+  private cliPath: string;
 
-  constructor() {
-    // Path to your brand-assets MCP server
-    this.mcpPath = path.resolve('/Users/bchristensen/Documents/GitHub/brand-assets/server.py');
+  constructor(config: BrandAssetsMCPConfig = {}) {
+    // Default to development MCP in monorepo, fallback to original location
+    this.mcpPath = path.resolve(config.mcpServerPath || 
+      '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/core-mcp-dev/server.py');
+    this.cliPath = path.resolve(config.cliWrapperPath || 
+      '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/core-mcp-dev/cli_wrapper.py');
   }
 
   async searchAssets(query: string): Promise<MCPResponse> {
     return new Promise((resolve, reject) => {
       // Use the CLI wrapper
-      const cliPath = path.resolve('/Users/bchristensen/Documents/GitHub/brand-assets/cli_wrapper.py');
-      const python = spawn('python3', [cliPath, query]);
+      const python = spawn('python3', [this.cliPath, query]);
       let output = '';
       let errorOutput = '';
 
