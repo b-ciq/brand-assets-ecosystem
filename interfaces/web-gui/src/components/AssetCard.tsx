@@ -2,8 +2,11 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Asset } from '@/types/asset';
-import { FileText } from 'lucide-react';
+import { FileText, Settings } from 'lucide-react';
 import DownloadModalNew from './DownloadModalNew';
+import { QuickDownloadButton, QuickDownloadIcon } from './QuickDownloadButton';
+import { SmartAssetPreviewCompact } from './SmartAssetPreview';
+import { useSmartDefaults } from '@/hooks/useSmartDefaults';
 
 interface AssetCardProps {
   asset: Asset;
@@ -15,7 +18,11 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
   const [imageError, setImageError] = useState(false);
   const [shouldLoadImage, setShouldLoadImage] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  
+  // Smart defaults for this asset with safety check
+  const { smartDefaults, isLoading: smartLoading } = useSmartDefaults(asset?.id ? asset : null);
 
   // Intersection Observer for lazy loading
   useEffect(() => {
@@ -71,9 +78,14 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
     return 'var(--quantic-color-gray-dark-mode-800)';
   };
 
-  const handleDownload = (e: React.MouseEvent) => {
+  const handleAdvancedDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowDownloadModal(true);
+  };
+
+  const handleQuickDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Quick download is handled by the QuickDownloadButton component
   };
 
   const formatFileSize = (bytes?: number) => {
@@ -100,8 +112,26 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
         e.currentTarget.style.borderColor = 'var(--quantic-border-primary)';
       }}
     >
-      {/* Image container */}
-      <div className="relative aspect-square overflow-hidden p-8 flex items-center justify-center" style={{ backgroundColor: getImageBackground() }}>
+      {/* Image container with smart preview overlay */}
+      <div className="relative aspect-square overflow-hidden p-8 flex items-center justify-center group/image" style={{ backgroundColor: getImageBackground() }}>
+        
+        {/* Smart indicator */}
+        {smartDefaults && (
+          <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="bg-brand-green text-white p-1 rounded shadow-sm" title="Smart defaults available">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+            </div>
+          </div>
+        )}
+        
+        {/* Quick actions overlay */}
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
+          <QuickDownloadIcon 
+            asset={asset} 
+            size={16} 
+            className="bg-white/90 backdrop-blur-sm hover:bg-white" 
+          />
+        </div>
         {!imageError && shouldLoadImage ? (
           <>
             {!imageLoaded && (
@@ -151,24 +181,35 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
           )}
         </div>
         
-        {/* Hover download button */}
+        {/* Dual-path download overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-90 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded">
-          <button
-            onClick={handleDownload}
-            className="px-4 py-2 rounded-lg font-semibold transition-colors duration-200"
-            style={{
-              backgroundColor: 'var(--quantic-color-brand-600)',
-              color: 'white'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--quantic-color-brand-700)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--quantic-color-brand-600)';
-            }}
-          >
-            Download
-          </button>
+          <div className="flex flex-col gap-2 items-center">
+            {/* Quick Download - Primary action */}
+            <QuickDownloadButton
+              asset={asset}
+              variant="primary"
+              size="md"
+              onDownloadStart={() => console.log('Quick download started')}
+              onDownloadComplete={() => console.log('Quick download completed')}
+              onError={(error) => console.error('Quick download error:', error)}
+            />
+            
+            {/* Advanced Options - Secondary action */}
+            <button
+              onClick={handleAdvancedDownload}
+              className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg font-medium transition-colors duration-200 bg-gray-100 text-gray-900 hover:bg-gray-200"
+            >
+              <Settings size={12} />
+              Advanced
+            </button>
+            
+            {/* Smart preview hint */}
+            {smartDefaults && (
+              <div className="text-xs text-gray-300 text-center max-w-32">
+                Smart: {smartDefaults.format.toUpperCase()} • {smartDefaults.variant}
+              </div>
+            )}
+          </div>
         </div>
         
       </div>
