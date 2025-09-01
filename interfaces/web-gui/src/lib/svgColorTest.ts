@@ -19,9 +19,9 @@ export function manipulateSvgColors(svgContent: string, targetColor: string): st
 // Test function to create colored versions
 export async function testSvgColoring() {
   const svgPaths = [
-    '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/core-mcp-dev/assets/products/fuzzball/logos/Fuzzball_logo_h-blk.svg',
-    '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/core-mcp-dev/assets/products/fuzzball/logos/Fuzzball_logo_v-blk.svg',
-    '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/core-mcp-dev/assets/products/fuzzball/logos/Fuzzball_logo_symbol-blk.svg'
+    '/assets/products/fuzzball/logos/Fuzzball_logo_h-blk.svg',
+    '/assets/products/fuzzball/logos/Fuzzball_logo_v-blk.svg',
+    '/assets/products/fuzzball/logos/Fuzzball_logo_symbol-blk.svg'
   ];
 
   const testColors = {
@@ -38,7 +38,7 @@ export async function testSvgColoring() {
     console.log(`\nTesting: ${fileName}`);
     
     try {
-      const response = await fetch(svgPath.replace('/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/core-mcp-dev/', '/'));
+      const response = await fetch(svgPath);
       const svgContent = await response.text();
       
       for (const [colorName, colorValue] of Object.entries(testColors)) {

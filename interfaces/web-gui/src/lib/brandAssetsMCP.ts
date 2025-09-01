@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import path from 'path';
+import { getSpecificVariantMetadata } from './productDefaults';
 
 interface MCPAsset {
   url: string;
@@ -38,11 +39,11 @@ export class BrandAssetsMCP {
   private useCloudEndpoint: boolean;
 
   constructor(config: BrandAssetsMCPConfig = {}) {
-    // Default to development MCP in monorepo, fallback to original location
+    // Default to development MCP in monorepo
     this.mcpPath = path.resolve(config.mcpServerPath || 
-      '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/core-mcp-dev/server.py');
+      '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/interfaces/mcp-server/server.py');
     this.cliPath = path.resolve(config.cliWrapperPath || 
-      '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/core-mcp-dev/cli_wrapper.py');
+      '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/interfaces/mcp-server/cli_wrapper.py');
     this.cloudEndpoint = config.cloudEndpoint;
     this.useCloudEndpoint = config.useCloudEndpoint || false;
   }
@@ -274,9 +275,20 @@ export class BrandAssetsMCP {
       // Flatten the nested structure
       Object.entries(mcpResponse.assets).forEach(([product, productAssets]) => {
         Object.entries(productAssets).forEach(([assetKey, asset]) => {
+          // Determine variant from asset layout or filename
+          const variant = asset.layout as 'horizontal' | 'vertical' | 'symbol';
+          
+          // Get metadata for this specific variant
+          const variantMeta = getSpecificVariantMetadata(product, variant);
+          
+          // Generate display name and description
+          const displayName = variantMeta?.displayName || 
+            `${product.charAt(0).toUpperCase()}${product.slice(1)} ${variant.charAt(0).toUpperCase()}${variant.slice(1)} Logo`;
+          
           assets.push({
             id: `${product}-${assetKey}`,
-            title: asset.name || asset.filename.replace(/\.[^/.]+$/, ""), // Use name field or fallback
+            title: asset.name || asset.filename.replace(/\.[^/.]+$/, ""), // Keep original filename for compatibility
+            displayName: displayName,
             description: asset.description || `${product} ${asset.type} - ${asset.layout}`,
             conciseDescription: this.generateConciseDescription(product, assetKey, asset),
             url: asset.url,
@@ -289,7 +301,10 @@ export class BrandAssetsMCP {
               background: asset.background,
               color: asset.color,
               layout: asset.layout,
-              size: asset.size
+              size: asset.size,
+              variant: variant,
+              isPrimary: variantMeta?.isPrimary || false,
+              usageContext: variantMeta?.usageContext || 'general use'
             }
           });
         });

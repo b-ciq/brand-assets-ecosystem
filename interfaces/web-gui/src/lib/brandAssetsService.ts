@@ -7,8 +7,8 @@ const USE_CLOUD_ENDPOINT = process.env.USE_CLOUD_ENDPOINT === 'true' ||
                           (process.env.NODE_ENV === 'production' && process.env.FASTMCP_API_KEY);
 
 const mcp = new BrandAssetsMCP({
-  mcpServerPath: '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/core-mcp-dev/server.py',
-  cliWrapperPath: '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/core-mcp-dev/cli_wrapper.py',
+  mcpServerPath: '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/interfaces/mcp-server/server.py',
+  cliWrapperPath: '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/interfaces/mcp-server/cli_wrapper.py',
   cloudEndpoint: 'https://quantic-asset-server.fastmcp.app/mcp',
   useCloudEndpoint: USE_CLOUD_ENDPOINT
 });

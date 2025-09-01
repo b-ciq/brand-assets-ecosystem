@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CircleX } from 'lucide-react';
+import { CircleX, Search } from 'lucide-react';
 import { SearchFilters } from '@/types/asset';
 
 // Image assets from Figma
@@ -139,8 +139,10 @@ export default function Header({ onSearch, isLoading = false }: HeaderProps) {
     <div className="bg-[#13161b] relative w-full h-[134px]" data-name="header" data-node-id="1:6508">
       <div className="absolute content-stretch flex items-center justify-between left-4 sm:left-8 lg:left-[51px] right-4 sm:right-8 lg:right-[51px] top-[47px]" data-node-id="1:10635">
         <div className="content-stretch flex gap-3 sm:gap-4 lg:gap-6 items-center justify-start relative shrink-0" data-node-id="1:10638">
-          <div className="h-[37px] relative shrink-0 w-[90px]" data-name="CIQ-Logo" data-node-id="1:6527">
-            <img alt="CIQ Logo" className="block max-w-none size-full" src={imgCiqLogo} />
+          <div className="h-[37px] relative shrink-0 w-[90px] flex items-center" data-name="CIQ-Logo" data-node-id="1:6527">
+            <div className="font-['Inter:Bold',_sans-serif] font-bold text-xl text-white">
+              CIQ
+            </div>
           </div>
           <div className="font-['Inter:Regular',_sans-serif] font-normal leading-[0] not-italic relative shrink-0 text-[#85888e] text-base sm:text-lg text-nowrap hidden sm:block" data-node-id="1:10636">
             <p className="leading-[28px] whitespace-pre">Brand asset finder</p>
@@ -171,11 +173,7 @@ export default function Header({ onSearch, isLoading = false }: HeaderProps) {
             <div className="box-border content-stretch flex gap-2 items-center justify-start overflow-clip px-3 py-2 relative w-full h-full">
               <div className="basis-0 content-stretch flex gap-2 grow items-center justify-start min-h-px min-w-px relative shrink-0" data-name="Content" data-node-id="1:7878">
                 <div className="overflow-clip relative shrink-0 size-5" data-name="search-lg" data-node-id="1:7879">
-                  <div className="absolute inset-[12.5%]" data-name="Icon" id="node-I1_7879-3463_405301">
-                    <div className="absolute inset-[-5.56%]" style={{ "--stroke-0": "rgba(164, 167, 174, 1)" } as React.CSSProperties}>
-                      <img alt="" className="block max-w-none size-full" src={img1} />
-                    </div>
-                  </div>
+                  <Search size={20} className="text-[#717680]" />
                 </div>
                 <input
                   type="text"
