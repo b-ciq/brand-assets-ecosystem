@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Asset } from '@/types/asset';
 import { FileText } from 'lucide-react';
+import DownloadModalNew from './DownloadModalNew';
 
 interface AssetCardProps {
   asset: Asset;
@@ -13,6 +14,7 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [shouldLoadImage, setShouldLoadImage] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   // Intersection Observer for lazy loading
@@ -69,42 +71,9 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
     return 'var(--quantic-color-gray-dark-mode-800)';
   };
 
-  const handleDownload = async (e: React.MouseEvent) => {
+  const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    try {
-      // Fetch the file as a blob to force download
-      const response = await fetch(asset.url);
-      const blob = await response.blob();
-      
-      // Create object URL for the blob
-      const blobUrl = window.URL.createObjectURL(blob);
-      
-      // Create download link
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      
-      // Generate filename from asset title or URL
-      const filename = asset.filename || 
-                     `${asset.title || 'asset'}.${asset.fileType || 'png'}`;
-      link.download = filename;
-      
-      // Trigger download
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Clean up object URL
-      window.URL.revokeObjectURL(blobUrl);
-    } catch (error) {
-      console.error('Download failed:', error);
-      // Fallback to simple link method
-      const link = document.createElement('a');
-      link.href = asset.url;
-      link.download = asset.filename || `${asset.title || 'asset'}.${asset.fileType || 'png'}`;
-      link.target = '_blank';
-      link.click();
-    }
+    setShowDownloadModal(true);
   };
 
   const formatFileSize = (bytes?: number) => {
@@ -203,6 +172,13 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
         </div>
         
       </div>
+
+      {/* Download Modal */}
+      <DownloadModalNew 
+        asset={asset}
+        isOpen={showDownloadModal}
+        onClose={() => setShowDownloadModal(false)}
+      />
     </div>
   );
 }
