@@ -2,6 +2,7 @@
 
 import { Asset } from '@/types/asset';
 import AssetCard from './AssetCard';
+import { Search } from 'lucide-react';
 
 interface AssetGridProps {
   assets: Asset[];
@@ -12,6 +13,26 @@ interface AssetGridProps {
 }
 
 export default function AssetGrid({ assets, isLoading = false, isLoadingMore = false, hasMore = false, onAssetClick }: AssetGridProps) {
+  // Separate assets into preferred and other options
+  const getAssetPriority = (asset: Asset) => {
+    if (!asset.conciseDescription) return 2; // Other options by default
+    
+    const desc = asset.conciseDescription;
+    // Preferred assets (priority 1)
+    if (desc.includes('Standard choice') || 
+        desc.includes('General use') || 
+        desc.includes('Sales overview') ||
+        desc.includes('Product overview')) {
+      return 1;
+    }
+    
+    // Other options (priority 2)
+    return 2;
+  };
+
+  const preferredAssets = assets.filter(asset => getAssetPriority(asset) === 1);
+  const otherAssets = assets.filter(asset => getAssetPriority(asset) === 2);
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
@@ -30,7 +51,7 @@ export default function AssetGrid({ assets, isLoading = false, isLoadingMore = f
   if (assets.length === 0) {
     return (
       <div className="text-center py-16">
-        <div className="text-6xl mb-4" style={{ color: 'var(--quantic-color-gray-dark-mode-600)' }}>🔍</div>
+        <Search size={48} className="mx-auto mb-4" style={{ color: 'var(--quantic-color-gray-dark-mode-600)' }} />
         <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--quantic-text-primary)' }}>No assets found</h3>
         <p style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>Try adjusting your search terms or filters</p>
       </div>
@@ -39,15 +60,60 @@ export default function AssetGrid({ assets, isLoading = false, isLoadingMore = f
 
   return (
     <div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        {assets.map((asset) => (
-          <AssetCard
-            key={asset.id}
-            asset={asset}
-            onClick={() => onAssetClick?.(asset)}
-          />
-        ))}
-      </div>
+      {/* Preferred Assets Section */}
+      {preferredAssets.length > 0 && (
+        <div className="mb-8">
+          <h2 
+            className="text-lg font-medium mb-4" 
+            style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}
+          >
+            Recommended
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            {preferredAssets.map((asset) => (
+              <AssetCard
+                key={asset.id}
+                asset={asset}
+                onClick={() => onAssetClick?.(asset)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Other Options Section */}
+      {otherAssets.length > 0 && (
+        <div className="mb-8">
+          <h2 
+            className="text-lg font-medium mb-4" 
+            style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}
+          >
+            Other Options
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-6">
+            {otherAssets.map((asset) => (
+              <AssetCard
+                key={asset.id}
+                asset={asset}
+                onClick={() => onAssetClick?.(asset)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Fallback: If no assets match our criteria, show all in single grid */}
+      {preferredAssets.length === 0 && otherAssets.length === 0 && assets.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+          {assets.map((asset) => (
+            <AssetCard
+              key={asset.id}
+              asset={asset}
+              onClick={() => onAssetClick?.(asset)}
+            />
+          ))}
+        </div>
+      )}
       
       {/* Loading more indicator */}
       {isLoadingMore && (

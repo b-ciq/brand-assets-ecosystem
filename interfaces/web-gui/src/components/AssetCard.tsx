@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Asset } from '@/types/asset';
+import { FileText } from 'lucide-react';
 
 interface AssetCardProps {
   asset: Asset;
@@ -68,13 +69,42 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
     return 'var(--quantic-color-gray-dark-mode-800)';
   };
 
-  const handleDownload = (e: React.MouseEvent) => {
+  const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Implement download functionality
-    const link = document.createElement('a');
-    link.href = asset.url;
-    link.download = asset.title || 'asset';
-    link.click();
+    
+    try {
+      // Fetch the file as a blob to force download
+      const response = await fetch(asset.url);
+      const blob = await response.blob();
+      
+      // Create object URL for the blob
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      
+      // Generate filename from asset title or URL
+      const filename = asset.filename || 
+                     `${asset.title || 'asset'}.${asset.fileType || 'png'}`;
+      link.download = filename;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up object URL
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+      // Fallback to simple link method
+      const link = document.createElement('a');
+      link.href = asset.url;
+      link.download = asset.filename || `${asset.title || 'asset'}.${asset.fileType || 'png'}`;
+      link.target = '_blank';
+      link.click();
+    }
   };
 
   const formatFileSize = (bytes?: number) => {
@@ -124,21 +154,36 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
         ) : !shouldLoadImage ? (
           <div className="absolute inset-8 flex items-center justify-center">
             <div className="text-center" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
-              <div className="text-4xl mb-2">📄</div>
+              <FileText size={32} className="mx-auto mb-2" />
               <div className="text-sm">{asset.fileType.toUpperCase()}</div>
             </div>
           </div>
         ) : (
           <div className="flex items-center justify-center h-full text-gray-400">
             <div className="text-center">
-              <div className="text-4xl mb-2">📄</div>
+              <FileText size={32} className="mx-auto mb-2" />
               <div className="text-sm">{asset.fileType.toUpperCase()}</div>
             </div>
           </div>
         )}
         
-        {/* Hover overlay */}
-        <div className="absolute inset-8 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-md">
+      </div>
+
+      {/* Asset info */}
+      <div className="p-4 relative">
+        <h3 className="font-medium truncate mb-1" style={{ color: 'var(--quantic-text-primary)' }} title={asset.title}>
+          {asset.title}
+        </h3>
+        
+        <div className="flex items-center justify-between text-sm" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
+          <span className="font-medium">{asset.conciseDescription || asset.fileType?.toUpperCase()}</span>
+          {asset.fileSize && (
+            <span>{formatFileSize(asset.fileSize)}</span>
+          )}
+        </div>
+        
+        {/* Hover download button */}
+        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-90 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded">
           <button
             onClick={handleDownload}
             className="px-4 py-2 rounded-lg font-semibold transition-colors duration-200"
@@ -156,46 +201,7 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
             Download
           </button>
         </div>
-      </div>
-
-      {/* Asset info */}
-      <div className="p-4">
-        <h3 className="font-medium truncate mb-1" style={{ color: 'var(--quantic-text-primary)' }} title={asset.title}>
-          {asset.title}
-        </h3>
         
-        <div className="flex items-center justify-between text-sm" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
-          <span className="uppercase font-medium">{asset.fileType}</span>
-          {asset.fileSize && (
-            <span>{formatFileSize(asset.fileSize)}</span>
-          )}
-        </div>
-        
-        {asset.dimensions && (
-          <div className="text-xs mt-1" style={{ color: 'var(--quantic-color-gray-dark-mode-500)' }}>
-            {asset.dimensions.width} × {asset.dimensions.height}
-          </div>
-        )}
-        
-        {asset.tags && asset.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {asset.tags.slice(0, 3).map((tag, index) => (
-              <span
-                key={index}
-                className="inline-block text-xs px-2 py-1 rounded"
-                style={{
-                  backgroundColor: 'var(--quantic-color-gray-dark-mode-800)',
-                  color: 'var(--quantic-color-gray-dark-mode-300)'
-                }}
-              >
-                {tag}
-              </span>
-            ))}
-            {asset.tags.length > 3 && (
-              <span className="text-xs" style={{ color: 'var(--quantic-color-gray-dark-mode-500)' }}>+{asset.tags.length - 3}</span>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

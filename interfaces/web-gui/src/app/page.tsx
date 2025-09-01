@@ -27,6 +27,7 @@ export default function Home() {
       const params = new URLSearchParams();
       if (filters.query) params.set('query', filters.query);
       if (filters.fileType) params.set('fileType', filters.fileType);
+      if (filters.assetType) params.set('assetType', filters.assetType);
       params.set('page', page.toString());
 
       const response = await fetch(`/api/search?${params.toString()}`);

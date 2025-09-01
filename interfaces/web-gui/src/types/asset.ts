@@ -2,6 +2,7 @@ export interface Asset {
   id: string;
   title: string;
   description?: string;
+  conciseDescription?: string;
   url: string;
   thumbnailUrl?: string;
   fileType: string;
@@ -24,6 +25,7 @@ export interface Asset {
 export interface SearchFilters {
   query: string;
   fileType?: string;
+  assetType?: string;
   brand?: string;
   tags?: string[];
 }

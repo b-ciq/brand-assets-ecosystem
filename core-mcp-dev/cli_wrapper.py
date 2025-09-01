@@ -8,10 +8,24 @@ import requests
 from typing import Optional, Dict, Any, List
 
 # Copy the core functionality without FastMCP dependency
-METADATA_URL = 'https://raw.githubusercontent.com/b-ciq/brand-assets/main/metadata/asset-inventory.json'
+METADATA_URL = 'https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main/core-mcp-dev/metadata/asset-inventory.json'
+import os
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+LOCAL_METADATA_PATH = os.path.join(SCRIPT_DIR, 'metadata', 'asset-inventory.json')
 
 def load_asset_data():
-    """Load asset metadata from GitHub"""
+    """Load asset metadata from local file first, fallback to GitHub"""
+    import os
+    
+    # Try local file first for development
+    if os.path.exists(LOCAL_METADATA_PATH):
+        try:
+            with open(LOCAL_METADATA_PATH, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading local metadata: {e}", file=sys.stderr)
+    
+    # Fallback to GitHub
     try:
         response = requests.get(METADATA_URL, timeout=10)
         response.raise_for_status()

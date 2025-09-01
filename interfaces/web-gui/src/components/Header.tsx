@@ -96,13 +96,13 @@ interface HeaderProps {
 
 export default function Header({ onSearch, isLoading = false }: HeaderProps) {
   const [query, setQuery] = useState('');
-  const [fileType, setFileType] = useState('');
+  const [assetType, setAssetType] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch({
       query: query.trim(),
-      fileType: fileType || undefined,
+      assetType: assetType || undefined,
     });
   };
 
@@ -113,18 +113,26 @@ export default function Header({ onSearch, isLoading = false }: HeaderProps) {
       const timeoutId = setTimeout(() => {
         onSearch({
           query: value.trim(),
-          fileType: fileType || undefined,
+          assetType: assetType || undefined,
         });
       }, 500);
       return () => clearTimeout(timeoutId);
     }
   };
 
+  const handleAssetTypeChange = (value: string) => {
+    setAssetType(value);
+    onSearch({
+      query: query.trim(),
+      assetType: value || undefined,
+    });
+  };
+
   const handleClearSearch = () => {
     setQuery('');
     onSearch({
       query: '',
-      fileType: fileType || undefined,
+      assetType: assetType || undefined,
     });
   };
   return (
@@ -140,10 +148,10 @@ export default function Header({ onSearch, isLoading = false }: HeaderProps) {
         </div>
         <div className="content-stretch flex gap-2 sm:gap-4 lg:gap-6 items-center justify-start relative shrink-0" data-node-id="1:8979">
           <select
-            value={fileType}
-            onChange={(e) => setFileType(e.target.value)}
+            value={assetType}
+            onChange={(e) => handleAssetTypeChange(e.target.value)}
             disabled={isLoading}
-            className="backdrop-blur-[2px] backdrop-filter bg-[rgba(19,22,27,0.65)] h-10 relative rounded-[8px] shrink-0 w-[91px] border border-[#373a41] border-solid text-[#cecfd2] text-[14px] font-['Inter:Semibold',_sans-serif] uppercase appearance-none cursor-pointer flex items-center"
+            className="backdrop-blur-[2px] backdrop-filter bg-[rgba(19,22,27,0.65)] h-10 relative rounded-[8px] shrink-0 w-[140px] border border-[#373a41] border-solid text-[#cecfd2] text-[14px] font-['Inter:Semibold',_sans-serif] uppercase appearance-none cursor-pointer flex items-center"
             data-name="filter menu" 
             data-node-id="1:10761"
             style={{
@@ -155,11 +163,9 @@ export default function Header({ onSearch, isLoading = false }: HeaderProps) {
               paddingRight: '2.5rem'
             }}
           >
-            <option value="">ALL</option>
-            <option value="svg">SVG</option>
-            <option value="png">PNG</option>
-            <option value="jpg">JPG</option>
-            <option value="gif">GIF</option>
+            <option value="">ALL TYPES</option>
+            <option value="logo">LOGOS</option>
+            <option value="document">SOLUTION BRIEF</option>
           </select>
           <div className="relative rounded-[8px] shrink-0 w-48 sm:w-64 lg:w-80 h-10 flex items-center" data-name="Input" data-node-id="1:7877" style={{ backgroundColor: 'var(--quantic-bg-primary)' }}>
             <div className="box-border content-stretch flex gap-2 items-center justify-start overflow-clip px-3 py-2 relative w-full h-full">

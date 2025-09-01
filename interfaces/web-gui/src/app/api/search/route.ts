@@ -5,6 +5,7 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const query = searchParams.get('query') || '';
   const fileType = searchParams.get('fileType') || undefined;
+  const assetType = searchParams.get('assetType') || undefined;
   const brand = searchParams.get('brand') || undefined;
   const background = searchParams.get('background') as 'light' | 'dark' | undefined;
   const layout = searchParams.get('layout') as 'horizontal' | 'vertical' | 'symbol' | undefined;
@@ -15,6 +16,7 @@ export async function GET(request: NextRequest) {
     // Build filters object
     const filters: SimpleSearchFilters = {};
     if (fileType) filters.fileType = fileType;
+    if (assetType) filters.assetType = assetType;
     if (brand) filters.brand = brand;
     if (background) filters.background = background;
     if (layout) filters.layout = layout;

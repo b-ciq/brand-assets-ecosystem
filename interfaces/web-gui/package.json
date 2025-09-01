@@ -9,13 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@brand-assets/shared": "file:../../shared",
     "@modelcontextprotocol/sdk": "^1.17.4",
     "lucide-react": "^0.542.0",
     "next": "15.5.2",
     "puppeteer": "^24.17.1",
     "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "@brand-assets/shared": "file:../../shared"
+    "react-dom": "19.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

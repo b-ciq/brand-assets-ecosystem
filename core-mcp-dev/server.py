@@ -11,11 +11,11 @@ from typing import Optional, Dict, Any, List, Tuple
 import re
 import os
 
-# Asset metadata URL
-METADATA_URL = 'https://raw.githubusercontent.com/b-ciq/brand-assets/main/metadata/asset-inventory.json'
+# Asset metadata URL - Updated for ecosystem repository
+METADATA_URL = 'https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main/core-mcp-dev/metadata/asset-inventory.json'
 
-# Color palette URL
-COLOR_PALETTE_URL = 'https://raw.githubusercontent.com/b-ciq/brand-assets/main/assets/global/colors/color-palette-dark.json'
+# Color palette URL - Updated for ecosystem repository  
+COLOR_PALETTE_URL = 'https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main/core-mcp-dev/assets/global/colors/color-palette-dark.json'
 
 # Initialize FastMCP server
 mcp = FastMCP("CIQ Brand Assets")
