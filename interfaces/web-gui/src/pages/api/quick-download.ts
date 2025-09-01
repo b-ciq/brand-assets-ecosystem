@@ -82,17 +82,31 @@ export default async function handler(
     }
 
     // TODO: Fetch asset from database/storage
-    // For now, create a mock asset for testing
-    const mockAsset = {
-      id: assetId,
-      title: 'Fuzzball Logo',
-      conciseDescription: 'Primary brand logo',
-      fileType: 'svg',
-      url: '/fuzzball/fuzzball-horizontal.svg',
-      thumbnailUrl: '/fuzzball/fuzzball-horizontal.svg',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+    // For now, create mock assets based on consistent naming pattern
+    const mockAssets: Record<string, any> = {
+      'fuzzball': {
+        id: 'fuzzball',
+        title: 'Fuzzball Logo',
+        conciseDescription: 'Primary brand logo',
+        fileType: 'svg',
+        url: '/assets/products/fuzzball/logos/Fuzzball_logo_h-blk.svg',
+        thumbnailUrl: '/assets/products/fuzzball/logos/Fuzzball_logo_h-blk.svg',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      'ascender': {
+        id: 'ascender',
+        title: 'AscenderPro Logo',
+        conciseDescription: 'Ascender product logo',
+        fileType: 'svg',
+        url: '/assets/products/ascender/logos/AscenderPro_logo_h-blk.svg',
+        thumbnailUrl: '/assets/products/ascender/logos/AscenderPro_logo_h-blk.svg',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
     };
+    
+    const mockAsset = mockAssets[assetId] || mockAssets['fuzzball'];
 
     // Create download configuration from parameters
     const configOverrides: Partial<DownloadConfig> = {};

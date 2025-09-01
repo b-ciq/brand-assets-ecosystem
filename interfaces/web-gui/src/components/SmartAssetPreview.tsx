@@ -45,17 +45,17 @@ export function SmartAssetPreview({
       setError(null);
 
       try {
-        // Construct the expected file path based on variant
+        // Construct the expected file path based on variant using consistent naming pattern
         let assetPath: string;
         
         if (effectiveVariant === 'horizontal') {
           assetPath = asset.url; // Default horizontal logo
         } else if (effectiveVariant === 'symbol') {
-          // Replace the horizontal file with symbol version
-          assetPath = asset.url.replace('Fuzzball_logo_h-blk.svg', 'Fuzzball_logo_symbol-blk.svg');
+          // Replace _h-blk with _symbol-blk (works for both Fuzzball and AscenderPro)
+          assetPath = asset.url.replace('_h-blk.svg', '_symbol-blk.svg');
         } else if (effectiveVariant === 'vertical') {
-          // Replace the horizontal file with vertical version
-          assetPath = asset.url.replace('Fuzzball_logo_h-blk.svg', 'Fuzzball_logo_logo_v-blk.svg');
+          // Replace _h-blk with _v-blk (works for both Fuzzball and AscenderPro)  
+          assetPath = asset.url.replace('_h-blk.svg', '_v-blk.svg');
         } else {
           assetPath = asset.url;
         }
