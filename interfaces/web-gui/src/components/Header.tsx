@@ -140,9 +140,11 @@ export default function Header({ onSearch, isLoading = false }: HeaderProps) {
       <div className="absolute content-stretch flex items-center justify-between left-4 sm:left-8 lg:left-[51px] right-4 sm:right-8 lg:right-[51px] top-[47px]" data-node-id="1:10635">
         <div className="content-stretch flex gap-3 sm:gap-4 lg:gap-6 items-center justify-start relative shrink-0" data-node-id="1:10638">
           <div className="h-[37px] relative shrink-0 w-[90px] flex items-center" data-name="CIQ-Logo" data-node-id="1:6527">
-            <div className="font-['Inter:Bold',_sans-serif] font-bold text-xl text-white">
-              CIQ
-            </div>
+            <img 
+              src="/assets/global/CIQ_logos/CIQ_logo_2clr_darkmode.svg"
+              alt="CIQ Logo"
+              className="h-full w-auto object-contain"
+            />
           </div>
           <div className="font-['Inter:Regular',_sans-serif] font-normal leading-[0] not-italic relative shrink-0 text-[#85888e] text-base sm:text-lg text-nowrap hidden sm:block" data-node-id="1:10636">
             <p className="leading-[28px] whitespace-pre">Brand asset finder</p>

@@ -5,6 +5,7 @@ import { Asset } from '@/types/asset';
 import { X, Download, ChevronRight, ChevronDown } from 'lucide-react';
 import { convertSvgToRaster, isSvgUrl, getFileExtension } from '@/lib/svgConverter';
 import { manipulateSvgColors, BRAND_COLORS } from '@/lib/svgColorTest';
+import { getVariantMetadata, getPrimaryVariant, isCIQCompanyLogo, getCIQVariantMetadata, getPrimaryCIQVariant } from '@/lib/productDefaults';
 
 interface DownloadModalProps {
   asset: Asset;
@@ -18,33 +19,127 @@ type ColorChoice = 'neutral' | 'green';
 type AssetType = 'svg' | 'png' | 'jpg';
 type SizeChoice = 'S' | 'M' | 'L' | 'Custom';
 
-const SIZE_MAP = {
-  S: 256,
-  M: 512,
-  L: 1024
+// Visual height sizing - consistent optical size across orientations
+const VISUAL_HEIGHT_MAP = {
+  S: 128,  // Small visual height
+  M: 256,  // Medium visual height  
+  L: 512   // Large visual height
 };
 
-const VARIANTS = [
-  { id: 'horizontal', aspectRatio: 'aspect-[4/3]', logoPath: '/assets/products/fuzzball/logos/Fuzzball_logo_h-blk.svg' },
-  { id: 'vertical', aspectRatio: 'aspect-square', logoPath: '/assets/products/fuzzball/logos/Fuzzball_logo_logo_v-blk.svg' }, 
-  { id: 'symbol', aspectRatio: 'aspect-square', logoPath: '/assets/products/fuzzball/logos/Fuzzball_logo_symbol-blk.svg' }
-] as const;
-
 export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadModalProps) {
-  // Smart defaults
+  // Extract product name from asset for dynamic variant generation
+  const getProductName = (asset: Asset): string => {
+    // Try to get from brand first, then parse from ID
+    if (asset.brand) {
+      return asset.brand.toLowerCase();
+    }
+    // Parse from asset ID (format: "product-variant")
+    const productMatch = asset.id.split('-')[0];
+    return productMatch || 'fuzzball'; // fallback
+  };
+
+  const productName = getProductName(asset);
+  const isCIQLogo = isCIQCompanyLogo(productName);
+
+  // State declarations first
   const [colorMode, setColorMode] = useState<ColorMode>('light');
-  const [selectedVariant, setSelectedVariant] = useState<LogoVariant>('horizontal');
+  const [selectedVariant, setSelectedVariant] = useState<string>('');
   const [showAdvanced, setShowAdvanced] = useState(false);
   
-  // Advanced options
+  // Advanced options  
   const [colorChoice, setColorChoice] = useState<ColorChoice>('neutral');
-  const [assetType, setAssetType] = useState<AssetType>('png');
+  const [assetType, setAssetType] = useState<AssetType>('png'); // PNG with transparency as default
   const [sizeChoice, setSizeChoice] = useState<SizeChoice>('M');
-  const [customSize, setCustomSize] = useState<string>('512');
+  const [customSize, setCustomSize] = useState<string>('256'); // Default to medium visual height
   
   // State
   const [isDownloading, setIsDownloading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+
+  // Generate dynamic variants based on asset type
+  const getDynamicVariants = () => {
+    if (isCIQLogo) {
+      // CIQ company logo variants: show 1-color and 2-color for current mode
+      const ciqVariants = getCIQVariantMetadata();
+      const currentModeVariants = ciqVariants.filter(variant => 
+        variant.backgroundMode === colorMode
+      );
+      
+      return currentModeVariants.map(variant => {
+        const filename = `CIQ_logo_${variant.colorVariant === '1-color' ? '1clr' : '2clr'}_${variant.backgroundMode}mode.svg`;
+        
+        return {
+          id: variant.colorVariant, // Use color variant as ID (1-color or 2-color)
+          displayName: variant.displayName.replace(` (${variant.backgroundMode === 'dark' ? 'Dark' : ''})`, ''), // Clean name
+          aspectRatio: 'aspect-[2/1]', // CIQ logos are wider
+          logoPath: `/assets/global/CIQ_logos/${filename}`
+        };
+      });
+    }
+    
+    // Product logo variants: horizontal/vertical/symbol
+    const variantMetadata = getVariantMetadata(productName);
+    const baseUrl = asset.url;
+    
+    return variantMetadata.map(variant => {
+      // Generate the variant URL by constructing it properly for each product
+      // Handle patterns like: Fuzzball_logo_h-blk.svg, WarewulfPro_logo_h-blk.svg, etc.
+      let variantUrl = baseUrl;
+      const variantSuffix = variant.variant === 'horizontal' ? 'h' : variant.variant === 'vertical' ? 'v' : 'symbol';
+      
+      // More robust regex that handles different product naming patterns
+      // Matches: ProductName_logo_(h|v|symbol)-blk.svg
+      const logoPattern = /(.*_logo_)(symbol|v|h)(-blk\.svg)$/;
+      const match = baseUrl.match(logoPattern);
+      
+      if (match) {
+        // If the URL matches our expected pattern, replace the variant part
+        variantUrl = `${match[1]}${variantSuffix}${match[3]}`;
+      } else {
+        // Fallback: try to construct URL from the base by extracting directory and product name
+        const urlParts = baseUrl.split('/');
+        const fileName = urlParts[urlParts.length - 1];
+        const basePath = urlParts.slice(0, -1).join('/');
+        
+        // Try to extract product name from filename (e.g., "WarewulfPro_logo_h-blk.svg" -> "WarewulfPro")
+        const productMatch = fileName.match(/^([^_]+(?:Pro)?)/);
+        if (productMatch) {
+          const productName = productMatch[1];
+          variantUrl = `${basePath}/${productName}_logo_${variantSuffix}-blk.svg`;
+        }
+      }
+      
+      console.log(`Variant ${variant.variant}: ${baseUrl} → ${variantUrl}`);
+      
+      return {
+        id: variant.variant,
+        displayName: variant.displayName,
+        aspectRatio: variant.variant === 'horizontal' ? 'aspect-[4/3]' : 'aspect-square',
+        logoPath: variantUrl
+      };
+    });
+  };
+
+  // Regenerate variants when color mode changes (for CIQ logos)
+  const variants = getDynamicVariants();
+
+  // Get primary variant based on asset type
+  const getInitialVariant = () => {
+    if (isCIQLogo) {
+      const primaryCIQ = getPrimaryCIQVariant();
+      return `${primaryCIQ.colorVariant}-${primaryCIQ.backgroundMode}`;
+    } else {
+      const primaryProduct = getPrimaryVariant(productName);
+      return primaryProduct.variant;
+    }
+  };
+
+  // Initialize selectedVariant after states are set
+  useEffect(() => {
+    if (!selectedVariant) {
+      setSelectedVariant(getInitialVariant());
+    }
+  }, [selectedVariant]);
 
   const isOriginalSvg = asset.fileType.toLowerCase() === 'svg' || asset.url.toLowerCase().includes('.svg');
 
@@ -104,19 +199,45 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
 
   if (!isOpen) return null;
 
-  const getSizeInPixels = () => {
-    if (sizeChoice === 'Custom') {
-      return parseInt(customSize) || 512;
+  // Calculate optical scaling based on visual height while preserving aspect ratios
+  const getOpticalScaling = () => {
+    const visualHeight = sizeChoice === 'Custom' 
+      ? parseInt(customSize) || 256 
+      : VISUAL_HEIGHT_MAP[sizeChoice];
+    
+    // Get the selected variant's URL to extract original SVG dimensions
+    const selectedVariantData = variants.find(v => v.id === selectedVariant);
+    const variantUrl = selectedVariantData?.logoPath || asset.url;
+    
+    // Extract viewBox dimensions from SVG if possible, otherwise use known ratios
+    // For now, use the known aspect ratios from the actual SVG files:
+    let originalAspectRatio: number;
+    
+    if (selectedVariant === 'horizontal') {
+      // Fuzzball horizontal: viewBox="0 0 733.5 221.9" = 3.3:1 ratio
+      originalAspectRatio = 733.5 / 221.9;
+    } else if (selectedVariant === 'vertical') {
+      // Fuzzball vertical: viewBox="0 0 497.28125 444.66988" = 1.12:1 ratio  
+      originalAspectRatio = 497.28125 / 444.66988;
+    } else {
+      // Fuzzball symbol: viewBox="0 0 309.3 304" = 1.02:1 ratio
+      originalAspectRatio = 309.3 / 304;
     }
-    return SIZE_MAP[sizeChoice];
+    
+    // Scale by visual height, preserve original aspect ratio
+    return {
+      height: visualHeight,
+      width: Math.round(visualHeight * originalAspectRatio)
+    };
   };
 
   const generateFileName = () => {
-    const baseName = 'fuzzball-logo';
+    const baseName = productName.toLowerCase();
     const variant = selectedVariant !== 'horizontal' ? `-${selectedVariant}` : '';
     const color = colorChoice === 'green' ? '-green' : '';
-    const mode = colorMode === 'dark' ? '-dark' : '';
-    const size = assetType !== 'svg' ? `-${getSizeInPixels()}px` : '';
+    const mode = colorMode === 'dark' ? '-light-on-dark' : '';
+    const scaling = getOpticalScaling();
+    const size = assetType !== 'svg' ? `-${scaling.height}h` : '';
     const ext = assetType === 'jpg' ? 'jpg' : assetType;
     return `${baseName}${variant}${color}${mode}${size}.${ext}`;
   };
@@ -138,26 +259,115 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
         
         blob = new Blob([svgContent], { type: 'image/svg+xml' });
       } else {
-        // Raster conversion
-        const size = getSizeInPixels();
+        // Raster conversion with optical scaling
+        const scaling = getOpticalScaling();
         
-        let sourceUrl = asset.url;
-        if (colorChoice === 'green') {
-          const response = await fetch(asset.url);
-          const svgContent = await response.text();
-          const coloredSvg = manipulateSvgColors(svgContent, BRAND_COLORS['brand-green']);
-          const encodedSvg = btoa(unescape(encodeURIComponent(coloredSvg)));
-          sourceUrl = `data:image/svg+xml;base64,${encodedSvg}`;
+        // Get the correct variant URL for the selected orientation
+        const selectedVariantData = variants.find(v => v.id === selectedVariant);
+        let sourceUrl = selectedVariantData?.logoPath || asset.url;
+        console.log('Converting variant:', selectedVariant, 'from URL:', sourceUrl);
+        
+        // Apply color modifications  
+        if (colorChoice === 'green' || colorMode === 'dark') {
+          try {
+            const response = await fetch(sourceUrl);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch SVG: ${response.status} ${response.statusText}`);
+            }
+            const svgContent = await response.text();
+            let processedSvg = svgContent;
+            
+            if (colorMode === 'dark') {
+              // Dark mode = white/light logos for dark backgrounds
+              processedSvg = manipulateSvgColors(svgContent, '#FFFFFF');
+            } else if (colorChoice === 'green') {
+              processedSvg = manipulateSvgColors(svgContent, BRAND_COLORS['brand-green']);
+            }
+            
+            const encodedSvg = btoa(unescape(encodeURIComponent(processedSvg)));
+            sourceUrl = `data:image/svg+xml;base64,${encodedSvg}`;
+          } catch (fetchError) {
+            console.error('Failed to fetch SVG for color modification:', fetchError);
+            // Continue with original URL if color modification fails
+          }
         }
         
-        blob = await convertSvgToRaster(sourceUrl, {
-          format: assetType === 'jpg' ? 'jpeg' : 'png',
-          width: size,
-          quality: assetType === 'jpg' ? 0.92 : undefined,
-          backgroundColor: assetType === 'jpg' 
-            ? (colorMode === 'dark' ? '#1a1d23' : '#FFFFFF')
-            : undefined
-        });
+        // Direct SVG to raster conversion to avoid CORS issues
+        try {
+          // Always fetch the SVG content first to avoid CORS issues
+          let svgContent: string;
+          
+          if (sourceUrl.startsWith('data:image/svg+xml')) {
+            // Already processed SVG data URL
+            const base64Data = sourceUrl.split(',')[1];
+            svgContent = atob(base64Data);
+          } else {
+            // Fetch SVG content directly
+            const response = await fetch(sourceUrl);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch SVG: ${response.status} ${response.statusText}`);
+            }
+            svgContent = await response.text();
+          }
+          
+          // Create data URL from SVG content
+          const dataUrl = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgContent)))}`;
+          console.log('Created data URL for conversion, length:', dataUrl.length);
+          console.log('Target dimensions:', scaling.width, 'x', scaling.height);
+          
+          // Convert using data URL to avoid CORS
+          try {
+            blob = await convertSvgToRaster(dataUrl, {
+              format: assetType === 'jpg' ? 'jpeg' : 'png',
+              width: scaling.width,
+              height: scaling.height,
+              quality: assetType === 'jpg' ? 0.92 : undefined,
+              backgroundColor: assetType === 'jpg' ? '#FFFFFF' : undefined
+            });
+            console.log('Conversion successful, blob size:', blob.size);
+          } catch (rasterError) {
+            console.error('Raster conversion failed, trying direct canvas approach:', rasterError);
+            
+            // Fallback: Direct canvas conversion
+            blob = await new Promise<Blob>((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => {
+                try {
+                  const canvas = document.createElement('canvas');
+                  const ctx = canvas.getContext('2d');
+                  if (!ctx) throw new Error('Cannot get canvas context');
+                  
+                  canvas.width = scaling.width;
+                  canvas.height = scaling.height;
+                  
+                  // Clear with transparent or white background
+                  if (assetType === 'jpg') {
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                  }
+                  
+                  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                  
+                  canvas.toBlob((canvasBlob) => {
+                    if (canvasBlob) {
+                      resolve(canvasBlob);
+                    } else {
+                      reject(new Error('Canvas to blob conversion failed'));
+                    }
+                  }, `image/${assetType === 'jpg' ? 'jpeg' : 'png'}`, assetType === 'jpg' ? 0.92 : undefined);
+                } catch (canvasError) {
+                  reject(canvasError);
+                }
+              };
+              img.onerror = () => reject(new Error('Image load failed in fallback'));
+              img.src = dataUrl;
+            });
+            console.log('Direct canvas conversion successful, blob size:', blob.size);
+          }
+        } catch (conversionError) {
+          console.error('SVG conversion failed:', conversionError);
+          throw new Error(`Failed to convert SVG to ${assetType.toUpperCase()}: ${conversionError instanceof Error ? conversionError.message : 'Unknown error'}`);
+        }
       }
       
       // Download
@@ -189,7 +399,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
       
       {/* Modal */}
       <div 
-        className="relative bg-[#2a2d33] rounded-lg shadow-xl p-6 w-[420px] max-w-[90vw] max-h-[90vh] overflow-y-auto"
+        className="relative bg-[#2a2d33] rounded-lg shadow-xl p-6 w-[507px] max-w-[90vw] max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -240,10 +450,23 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
             Select variant
           </label>
           <div className="grid grid-cols-3 gap-3">
-            {VARIANTS.map(({ id, aspectRatio, logoPath }) => {
+            {variants.map(({ id, displayName, aspectRatio, logoPath }) => {
               // Get the actual logo variant with proper coloring
               const getVariantContent = () => {
-                // Determine logo styling based on mode and choice
+                // For CIQ logos, never apply color manipulation - use provided files as-is
+                if (isCIQLogo) {
+                  return (
+                    <div className="flex items-center justify-center w-full h-full p-2">
+                      <img 
+                        src={logoPath}
+                        alt={`${id} logo variant`}
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    </div>
+                  );
+                }
+                
+                // For product logos, apply color manipulation based on mode and choice
                 const logoStyle = (() => {
                   if (colorMode === 'dark') {
                     // Dark mode: use white/light logos
@@ -271,22 +494,26 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
               };
               
               return (
-                <button
-                  key={id}
-                  onClick={() => setSelectedVariant(id as LogoVariant)}
-                  className={`aspect-square rounded-lg border-2 transition-all p-4 flex items-center justify-center`}
-                  style={{
-                    opacity: selectedVariant === id ? 1.0 : 0.35,
-                    backgroundColor: colorMode === 'light' 
-                      ? '#f3f4f6'  // Light gray background for light mode
-                      : '#4b5563',  // Dark background for dark mode
-                    borderColor: colorMode === 'light'
-                      ? '#d1d5db'   // Light border for light mode
-                      : '#6b7280'   // Dark border for dark mode
-                  }}
-                >
-                  {getVariantContent()}
-                </button>
+                <div key={id} className="flex flex-col items-center">
+                  <button
+                    onClick={() => setSelectedVariant(id)}
+                    className={`aspect-square rounded-lg border-2 transition-all p-4 flex items-center justify-center w-full`}
+                    style={{
+                      opacity: selectedVariant === id ? 1.0 : 0.35,
+                      backgroundColor: colorMode === 'light' 
+                        ? '#f3f4f6'  // Light gray background for light mode
+                        : '#4b5563',  // Dark background for dark mode
+                      borderColor: colorMode === 'light'
+                        ? '#d1d5db'   // Light border for light mode
+                        : '#6b7280'   // Dark border for dark mode
+                    }}
+                  >
+                    {getVariantContent()}
+                  </button>
+                  <label className="text-xs text-gray-400 mt-2 text-center">
+                    {displayName.replace(' Logo', '')}
+                  </label>
+                </div>
               );
             })}
           </div>

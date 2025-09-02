@@ -1,6 +1,6 @@
 import { spawn } from 'child_process';
 import path from 'path';
-import { getSpecificVariantMetadata } from './productDefaults';
+import { getSpecificVariantMetadata, isCIQCompanyLogo, getCIQVariantMetadata } from './productDefaults';
 
 interface MCPAsset {
   url: string;
@@ -210,6 +210,26 @@ export class BrandAssetsMCP {
     }
   }
 
+  // Normalize asset URLs to avoid CORS issues
+  static normalizeAssetUrl(url: string): string {
+    // If URL points to localhost:3000 but we're on 3002, convert to same-origin relative path
+    if (url.includes('localhost:3000/') || url.includes('127.0.0.1:3000/')) {
+      // Extract the path part after the domain
+      const pathMatch = url.match(/https?:\/\/[^\/]+(.*)$/);
+      if (pathMatch) {
+        return pathMatch[1]; // Returns the path part like "/assets/products/..."
+      }
+    }
+    
+    // If URL is already relative or from same origin, use as-is
+    if (url.startsWith('/') || url.startsWith('./') || !url.includes('://')) {
+      return url;
+    }
+    
+    // For any other external URLs, keep as-is (might need proxy later)
+    return url;
+  }
+
   // Generate concise description based on asset metadata and usage rules
   static generateConciseDescription(product: string, assetKey: string, asset: any): string {
     // Tier 3: CIQ Brand-Critical Assets (complex usage rules)
@@ -263,6 +283,39 @@ export class BrandAssetsMCP {
     return `${asset.type?.charAt(0).toUpperCase()}${asset.type?.slice(1)}${background}`;
   }
 
+  // Add CIQ company logos to search results
+  static addCIQLogos(assets: any[]) {
+    // Add all 4 CIQ variants using actual file names
+    const ciqVariants = getCIQVariantMetadata();
+    
+    ciqVariants.forEach((variant) => {
+      // Map to actual file names: CIQ_logo_1clr_lightmode.svg, etc.
+      const filename = `CIQ_logo_${variant.colorVariant === '1-color' ? '1clr' : '2clr'}_${variant.backgroundMode}mode.svg`;
+      
+      assets.push({
+        id: `ciq-${variant.colorVariant}-${variant.backgroundMode}`,
+        title: filename,
+        displayName: variant.displayName,
+        description: `CIQ company logo - ${variant.displayName}`,
+        conciseDescription: variant.usageContext,
+        url: `/assets/global/CIQ_logos/${filename}`,
+        thumbnailUrl: `/assets/global/CIQ_logos/${filename}`,
+        fileType: 'svg',
+        dimensions: { width: 100, height: 100 },
+        tags: ['ciq', 'company', 'logo'],
+        brand: 'CIQ',
+        category: 'company-logo',
+        assetType: 'logo',
+        metadata: {
+          backgroundMode: variant.backgroundMode,
+          colorVariant: variant.colorVariant,
+          isPrimary: variant.isPrimary,
+          usageContext: variant.usageContext
+        }
+      });
+    });
+  }
+
   // Convert MCP response to our Asset interface format
   static transformMCPResponse(mcpResponse: MCPResponse) {
     const assets: any[] = [];
@@ -285,35 +338,71 @@ export class BrandAssetsMCP {
           const displayName = variantMeta?.displayName || 
             `${product.charAt(0).toUpperCase()}${product.slice(1)} ${variant.charAt(0).toUpperCase()}${variant.slice(1)} Logo`;
           
+          // Add light mode version (original -blk.svg file)
           assets.push({
-            id: `${product}-${assetKey}`,
-            title: asset.name || asset.filename.replace(/\.[^/.]+$/, ""), // Keep original filename for compatibility
+            id: `${product}-${variant}-light`,
+            title: asset.name || (asset.filename ? asset.filename.replace(/\.[^/.]+$/, "") : "Unknown Asset"),
             displayName: displayName,
             description: asset.description || `${product} ${asset.type} - ${asset.layout}`,
             conciseDescription: this.generateConciseDescription(product, assetKey, asset),
-            url: asset.url,
-            thumbnailUrl: asset.url, // Same for now
-            fileType: asset.filename.split('.').pop()?.toLowerCase() || 'unknown',
+            url: this.normalizeAssetUrl(asset.url),
+            thumbnailUrl: this.normalizeAssetUrl(asset.url),
+            fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'unknown' : 'unknown',
             dimensions: asset.size === 'large' ? { width: 100, height: 100 } : { width: 100, height: 100 },
             tags: asset.tags || [],
             brand: product.toUpperCase(),
+            category: 'product-logo',
+            assetType: 'logo',
             metadata: {
+              backgroundMode: 'light', // Light mode version (dark logo for light backgrounds)
+              variant: variant,
+              isPrimary: variantMeta?.isPrimary && variant === 'horizontal', // Only horizontal light mode is primary
+              usageContext: variantMeta?.usageContext || 'general use',
+              // Legacy fields
               background: asset.background,
               color: asset.color,
               layout: asset.layout,
-              size: asset.size,
+              size: asset.size
+            }
+          });
+          
+          // Add dark mode version (same file but will be color-manipulated)
+          assets.push({
+            id: `${product}-${variant}-dark`,
+            title: `${asset.name || (asset.filename ? asset.filename.replace(/\.[^/.]+$/, "") : "Unknown Asset")} (Dark)`,
+            displayName: `${displayName} (Dark)`,
+            description: `${asset.description || `${product} ${asset.type} - ${asset.layout}`} - Dark mode`,
+            conciseDescription: this.generateConciseDescription(product, assetKey, asset),
+            url: this.normalizeAssetUrl(asset.url), // Same file, color manipulation happens in modal/download
+            thumbnailUrl: this.normalizeAssetUrl(asset.url),
+            fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'unknown' : 'unknown',
+            dimensions: asset.size === 'large' ? { width: 100, height: 100 } : { width: 100, height: 100 },
+            tags: [...(asset.tags || []), 'dark-mode'],
+            brand: product.toUpperCase(),
+            category: 'product-logo',
+            assetType: 'logo',
+            metadata: {
+              backgroundMode: 'dark', // Dark mode version (light logo for dark backgrounds)
               variant: variant,
-              isPrimary: variantMeta?.isPrimary || false,
-              usageContext: variantMeta?.usageContext || 'general use'
+              isPrimary: false, // Dark mode variants are never primary
+              usageContext: variantMeta?.usageContext || 'general use',
+              // Legacy fields
+              background: 'dark',
+              color: asset.color,
+              layout: asset.layout,
+              size: asset.size
             }
           });
         });
       });
     }
 
+    // Add CIQ company logos from actual provided assets
+    this.addCIQLogos(assets);
+
     return {
       assets,
-      total: mcpResponse.total_found || assets.length,
+      total: assets.length, // Updated total includes CIQ logos
       confidence: mcpResponse.confidence,
       recommendation: mcpResponse.recommendation
     };

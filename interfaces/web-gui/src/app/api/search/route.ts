@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   const brand = searchParams.get('brand') || undefined;
   const background = searchParams.get('background') as 'light' | 'dark' | undefined;
   const layout = searchParams.get('layout') as 'horizontal' | 'vertical' | 'symbol' | undefined;
+  const showPreferredOnly = searchParams.get('showPreferredOnly') !== 'false'; // Default: true
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '20');
 
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
     if (brand) filters.brand = brand;
     if (background) filters.background = background;
     if (layout) filters.layout = layout;
+    filters.showPreferredOnly = showPreferredOnly;
 
     // Search using the service
     const searchQuery = query || '';

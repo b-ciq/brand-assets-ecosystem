@@ -55,14 +55,14 @@ export class QuickDownloadService {
     const baseUrl = asset.url;
     
     if (variant === 'horizontal') {
-      // Replace any existing variant with horizontal pattern
-      return baseUrl.replace(/(logo_)(symbol|v|h)(-blk\.svg)$/, '$1h$3');
+      // Replace any existing variant with horizontal pattern - handle "Pro" suffixes
+      return baseUrl.replace(/(.*_logo_)(symbol|v|h)(-blk\.svg)$/, '$1h$3');
     } else if (variant === 'symbol') {
       // Replace any existing variant with symbol pattern  
-      return baseUrl.replace(/(logo_)(symbol|v|h)(-blk\.svg)$/, '$1symbol$3');
+      return baseUrl.replace(/(.*_logo_)(symbol|v|h)(-blk\.svg)$/, '$1symbol$3');
     } else if (variant === 'vertical') {
       // Replace any existing variant with vertical pattern
-      return baseUrl.replace(/(logo_)(symbol|v|h)(-blk\.svg)$/, '$1v$3');
+      return baseUrl.replace(/(.*_logo_)(symbol|v|h)(-blk\.svg)$/, '$1v$3');
     }
     
     return baseUrl; // Fallback

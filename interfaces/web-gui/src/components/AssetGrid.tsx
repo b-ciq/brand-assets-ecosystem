@@ -13,25 +13,9 @@ interface AssetGridProps {
 }
 
 export default function AssetGrid({ assets, isLoading = false, isLoadingMore = false, hasMore = false, onAssetClick }: AssetGridProps) {
-  // Separate assets into preferred and other options
-  const getAssetPriority = (asset: Asset) => {
-    if (!asset.conciseDescription) return 2; // Other options by default
-    
-    const desc = asset.conciseDescription;
-    // Preferred assets (priority 1)
-    if (desc.includes('Standard choice') || 
-        desc.includes('General use') || 
-        desc.includes('Sales overview') ||
-        desc.includes('Product overview')) {
-      return 1;
-    }
-    
-    // Other options (priority 2)
-    return 2;
-  };
-
-  const preferredAssets = assets.filter(asset => getAssetPriority(asset) === 1);
-  const otherAssets = assets.filter(asset => getAssetPriority(asset) === 2);
+  // Debug: Log what assets are being rendered
+  console.log('AssetGrid rendering', assets.length, 'assets');
+  console.log('Asset brands in grid:', assets.map(a => `${a.brand} (${a.id})`));
 
   if (isLoading) {
     return (
@@ -60,60 +44,16 @@ export default function AssetGrid({ assets, isLoading = false, isLoadingMore = f
 
   return (
     <div>
-      {/* Preferred Assets Section */}
-      {preferredAssets.length > 0 && (
-        <div className="mb-8">
-          <h2 
-            className="text-lg font-medium mb-4" 
-            style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}
-          >
-            Recommended
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {preferredAssets.map((asset) => (
-              <AssetCard
-                key={asset.id}
-                asset={asset}
-                onClick={() => onAssetClick?.(asset)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Other Options Section */}
-      {otherAssets.length > 0 && (
-        <div className="mb-8">
-          <h2 
-            className="text-lg font-medium mb-4" 
-            style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}
-          >
-            Other Options
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-6">
-            {otherAssets.map((asset) => (
-              <AssetCard
-                key={asset.id}
-                asset={asset}
-                onClick={() => onAssetClick?.(asset)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Fallback: If no assets match our criteria, show all in single grid */}
-      {preferredAssets.length === 0 && otherAssets.length === 0 && assets.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-          {assets.map((asset) => (
-            <AssetCard
-              key={asset.id}
-              asset={asset}
-              onClick={() => onAssetClick?.(asset)}
-            />
-          ))}
-        </div>
-      )}
+      {/* Unified Asset Grid - All assets together */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+        {assets.map((asset) => (
+          <AssetCard
+            key={asset.id}
+            asset={asset}
+            onClick={() => onAssetClick?.(asset)}
+          />
+        ))}
+      </div>
       
       {/* Loading more indicator */}
       {isLoadingMore && (

@@ -49,34 +49,10 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
     return () => observer.disconnect();
   }, []);
 
-  // Determine background color based on asset name/usage context
+  // Determine background color - always white for the 3x3 thumbnail area
   const getImageBackground = () => {
-    const assetName = asset.title.toLowerCase();
-    const url = asset.url.toLowerCase();
-    
-    // Check metadata first if available
-    if (asset.metadata?.background) {
-      // If metadata says "light", it means dark logo for light background
-      // If metadata says "dark", it means light logo for dark background  
-      return asset.metadata.background === 'light' 
-        ? 'var(--quantic-color-gray-light-mode-200)'
-        : 'var(--quantic-color-gray-dark-mode-800)';
-    }
-    
-    // Fallback to checking title and URL for light/dark keywords
-    const hasLight = assetName.includes('light') || url.includes('light');
-    const hasDark = assetName.includes('dark') || url.includes('dark');
-    
-    if (hasLight) {
-      // Light logos should be on dark backgrounds
-      return 'var(--quantic-color-gray-dark-mode-800)';
-    } else if (hasDark) {
-      // Dark logos should be on light backgrounds  
-      return 'var(--quantic-color-gray-light-mode-200)';
-    }
-    
-    // Default to current dark background
-    return 'var(--quantic-color-gray-dark-mode-800)';
+    // Requirements specify thumbnail background should be WHITE
+    return 'white';
   };
 
   const handleCustomizeDownload = (e: React.MouseEvent) => {
@@ -118,8 +94,8 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
   return (
     <div
       ref={cardRef}
-      onClick={onClick}
-      className="group cursor-pointer rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200"
+      onClick={handleCustomizeDownload}
+      className="group cursor-pointer rounded-lg hover:shadow-lg transition-all duration-200 aspect-[3/4] relative overflow-hidden"
       style={{
         backgroundColor: 'var(--quantic-color-gray-dark-mode-850)',
         border: `1px solid var(--quantic-border-primary)`,
@@ -132,15 +108,9 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
         e.currentTarget.style.borderColor = 'var(--quantic-border-primary)';
       }}
     >
-      {/* Image container with smart preview overlay */}
-      <div className="relative aspect-square overflow-hidden p-8 flex items-center justify-center group/image" style={{ backgroundColor: getImageBackground() }}>
+      {/* Image container - 3x3 area */}
+      <div className="relative h-full overflow-hidden p-8 flex items-center justify-center group/image rounded-lg" style={{ backgroundColor: '#ffffff' }}>
         
-        {/* Quick download preview on hover */}
-        <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <div className="bg-black/80 text-white text-xs px-2 py-1 rounded shadow-sm backdrop-blur-sm">
-            Quick: {quickDescription}
-          </div>
-        </div>
         {!imageError && shouldLoadImage ? (
           <>
             {!imageLoaded && (
@@ -177,37 +147,28 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
         
       </div>
 
-      {/* Asset info */}
-      <div className="p-4 relative">
-        <h3 className="font-medium truncate mb-1" style={{ color: 'var(--quantic-text-primary)' }} title={asset.displayName || asset.title}>
-          {asset.displayName || asset.title}
-        </h3>
-        
-        <div className="flex items-center justify-between text-sm" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
-          <span className="font-medium">{asset.conciseDescription || asset.fileType?.toUpperCase()}</span>
-          {asset.fileSize && (
-            <span>{formatFileSize(asset.fileSize)}</span>
-          )}
-        </div>
-        
-        {/* Progressive Disclosure - Two Path Download */}
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-90 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded">
-          <div className="flex flex-col gap-3 items-center">
-            
-            {/* Quick Download - Primary Path */}
+      {/* Sliding Panel - slides up from bottom on hover */}
+      <div className="absolute bottom-0 left-0 right-0 bg-black/90 backdrop-blur-md rounded-b-lg transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
+        <div className="px-4 py-3 space-y-2">
+          {/* Title */}
+          <div className="text-white font-medium text-center text-sm">
+            {asset.brand || 'Brand'} logo
+          </div>
+          
+          {/* Settings */}
+          <div className="text-xs text-white/80 text-center">
+            Medium PNG • dark mode
+          </div>
+          
+          {/* Buttons */}
+          <div className="flex items-center justify-center gap-2">
             <button
               onClick={handleQuickDownload}
               disabled={isQuickDownloading}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-semibold text-sm transition-all duration-200 disabled:opacity-50"
               style={{
                 backgroundColor: 'var(--quantic-color-brand-600)',
                 color: 'white'
-              }}
-              onMouseEnter={(e) => {
-                if (!isQuickDownloading) e.currentTarget.style.backgroundColor = 'var(--quantic-color-brand-700)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--quantic-color-brand-600)';
               }}
             >
               {isQuickDownloading ? (
@@ -218,34 +179,25 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
               ) : (
                 <>
                   <Zap size={16} />
-                  Quick Download
+                  Download
                 </>
               )}
             </button>
             
-            {/* Customize - Secondary Path */}
             <button
               onClick={handleCustomizeDownload}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg font-medium transition-colors duration-200 bg-gray-100 text-gray-900 hover:bg-gray-200"
+              className="flex items-center justify-center w-10 h-10 rounded-md transition-all duration-200 border"
+              style={{
+                backgroundColor: 'var(--quantic-color-gray-dark-mode-700)',
+                borderColor: 'var(--quantic-color-gray-dark-mode-600)',
+                color: 'var(--quantic-color-gray-dark-mode-300)'
+              }}
+              title="Customize"
             >
-              <Settings size={12} />
-              Customize
+              <Settings size={16} />
             </button>
-            
-            {/* Quick download preview */}
-            <div className="text-xs text-gray-300 text-center max-w-40">
-              Quick: {productDefaults.reason}
-            </div>
-            
-            {/* Error display */}
-            {quickDownloadError && (
-              <div className="text-xs text-red-300 text-center max-w-40 bg-red-900/20 px-2 py-1 rounded">
-                {quickDownloadError}
-              </div>
-            )}
           </div>
         </div>
-        
       </div>
 
       {/* Download Modal */}

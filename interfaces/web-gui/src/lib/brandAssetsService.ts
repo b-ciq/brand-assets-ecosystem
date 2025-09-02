@@ -26,6 +26,7 @@ export interface SimpleSearchFilters {
   brand?: string;
   background?: 'light' | 'dark';
   layout?: 'horizontal' | 'vertical' | 'symbol';
+  showPreferredOnly?: boolean; // Default: true - only show preferred variants
 }
 
 export async function searchAssets(query: string, filters?: SimpleSearchFilters): Promise<SimpleSearchResponse> {
@@ -35,6 +36,20 @@ export async function searchAssets(query: string, filters?: SimpleSearchFilters)
     const transformedData = BrandAssetsMCP.transformMCPResponse(mcpResponse);
     
     let filteredAssets = transformedData.assets;
+
+    // Show preferred variants by default (5 total: 1 CIQ + 4 product horizontals)
+    const showPreferredOnly = filters?.showPreferredOnly !== false; // Default: true (show preferred)
+    
+    if (showPreferredOnly) {
+      filteredAssets = filteredAssets.filter(asset => {
+        // For CIQ company logos, only show primary (1-color light mode)
+        if (asset.category === 'company-logo') {
+          return asset.metadata?.isPrimary;
+        }
+        // For product logos, only show primary (horizontal light mode)
+        return asset.metadata?.isPrimary;
+      });
+    }
 
     // Apply filters if provided
     if (filters) {
