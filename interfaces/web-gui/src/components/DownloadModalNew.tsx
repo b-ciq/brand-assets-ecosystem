@@ -46,6 +46,17 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
   const [selectedVariant, setSelectedVariant] = useState<string>('');
   const [showAdvanced, setShowAdvanced] = useState(false);
   
+  // Handler for color mode changes with auto-selection
+  const handleColorModeChange = (newMode: ColorMode) => {
+    setColorMode(newMode);
+    
+    // Auto-select first available variant for the new mode
+    const newVariants = getDynamicVariants();
+    if (newVariants.length > 0) {
+      setSelectedVariant(newVariants[0].id);
+    }
+  };
+  
   // Advanced options  
   const [colorChoice, setColorChoice] = useState<ColorChoice>('neutral');
   const [assetType, setAssetType] = useState<AssetType>('png'); // PNG with transparency as default
@@ -55,6 +66,16 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
   // State
   const [isDownloading, setIsDownloading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+
+  // Initialize selection when modal opens
+  useEffect(() => {
+    if (isOpen && !selectedVariant) {
+      const variants = getDynamicVariants();
+      if (variants.length > 0) {
+        setSelectedVariant(variants[0].id);
+      }
+    }
+  }, [isOpen]);
 
   // Generate dynamic variants based on asset type
   const getDynamicVariants = () => {
@@ -199,35 +220,18 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
 
   if (!isOpen) return null;
 
-  // Calculate optical scaling based on visual height while preserving aspect ratios
+  // Calculate scaling preserving original SVG aspect ratios - NEVER distort logos
   const getOpticalScaling = () => {
-    const visualHeight = sizeChoice === 'Custom' 
+    const targetHeight = sizeChoice === 'Custom' 
       ? parseInt(customSize) || 256 
       : VISUAL_HEIGHT_MAP[sizeChoice];
     
-    // Get the selected variant's URL to extract original SVG dimensions
-    const selectedVariantData = variants.find(v => v.id === selectedVariant);
-    const variantUrl = selectedVariantData?.logoPath || asset.url;
-    
-    // Extract viewBox dimensions from SVG if possible, otherwise use known ratios
-    // For now, use the known aspect ratios from the actual SVG files:
-    let originalAspectRatio: number;
-    
-    if (selectedVariant === 'horizontal') {
-      // Fuzzball horizontal: viewBox="0 0 733.5 221.9" = 3.3:1 ratio
-      originalAspectRatio = 733.5 / 221.9;
-    } else if (selectedVariant === 'vertical') {
-      // Fuzzball vertical: viewBox="0 0 497.28125 444.66988" = 1.12:1 ratio  
-      originalAspectRatio = 497.28125 / 444.66988;
-    } else {
-      // Fuzzball symbol: viewBox="0 0 309.3 304" = 1.02:1 ratio
-      originalAspectRatio = 309.3 / 304;
-    }
-    
-    // Scale by visual height, preserve original aspect ratio
+    // Always scale by height only, let width scale naturally to preserve aspect ratio
+    // The SVG converter will maintain the original aspect ratio automatically
     return {
-      height: visualHeight,
-      width: Math.round(visualHeight * originalAspectRatio)
+      height: targetHeight,
+      // Don't specify width - let SVG converter preserve original aspect ratio
+      width: undefined
     };
   };
 
@@ -315,15 +319,21 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
           console.log('Created data URL for conversion, length:', dataUrl.length);
           console.log('Target dimensions:', scaling.width, 'x', scaling.height);
           
-          // Convert using data URL to avoid CORS
+          // Convert using data URL to avoid CORS - preserve aspect ratio
           try {
-            blob = await convertSvgToRaster(dataUrl, {
+            const conversionOptions: any = {
               format: assetType === 'jpg' ? 'jpeg' : 'png',
-              width: scaling.width,
               height: scaling.height,
               quality: assetType === 'jpg' ? 0.92 : undefined,
               backgroundColor: assetType === 'jpg' ? '#FFFFFF' : undefined
-            });
+            };
+            
+            // Only specify width if it's defined (preserve aspect ratio when undefined)
+            if (scaling.width) {
+              conversionOptions.width = scaling.width;
+            }
+            
+            blob = await convertSvgToRaster(dataUrl, conversionOptions);
             console.log('Conversion successful, blob size:', blob.size);
           } catch (rasterError) {
             console.error('Raster conversion failed, trying direct canvas approach:', rasterError);
@@ -337,8 +347,10 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
                   const ctx = canvas.getContext('2d');
                   if (!ctx) throw new Error('Cannot get canvas context');
                   
-                  canvas.width = scaling.width;
+                  // Calculate proper dimensions preserving aspect ratio
+                  const aspectRatio = img.naturalWidth / img.naturalHeight;
                   canvas.height = scaling.height;
+                  canvas.width = scaling.width || Math.round(scaling.height * aspectRatio);
                   
                   // Clear with transparent or white background
                   if (assetType === 'jpg') {
@@ -399,7 +411,8 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
       
       {/* Modal */}
       <div 
-        className="relative bg-[#2a2d33] rounded-lg shadow-xl p-6 w-[507px] max-w-[90vw] max-h-[90vh] overflow-y-auto"
+        className="relative rounded-lg shadow-xl p-6 w-[507px] max-w-[90vw] max-h-[90vh] overflow-y-auto"
+        style={{ backgroundColor: 'rgba(9, 9, 11, 0.75)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -422,7 +435,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
           </label>
           <div className="flex rounded-lg overflow-hidden border border-gray-600">
             <button
-              onClick={() => setColorMode('light')}
+              onClick={() => handleColorModeChange('light')}
               className={`flex-1 py-3 px-4 text-sm font-medium transition-colors border-r border-gray-600 ${
                 colorMode === 'light' 
                   ? 'bg-gray-500 text-white' 
@@ -432,7 +445,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
               Light mode
             </button>
             <button
-              onClick={() => setColorMode('dark')}
+              onClick={() => handleColorModeChange('dark')}
               className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
                 colorMode === 'dark' 
                   ? 'bg-gray-500 text-white' 
@@ -502,10 +515,10 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
                       opacity: selectedVariant === id ? 1.0 : 0.35,
                       backgroundColor: colorMode === 'light' 
                         ? '#f3f4f6'  // Light gray background for light mode
-                        : '#4b5563',  // Dark background for dark mode
+                        : 'var(--quantic-bg-primary)',  // Dark background for dark mode
                       borderColor: colorMode === 'light'
                         ? '#d1d5db'   // Light border for light mode
-                        : '#6b7280'   // Dark border for dark mode
+                        : 'var(--quantic-border-primary)'   // Dark border for dark mode
                     }}
                   >
                     {getVariantContent()}
