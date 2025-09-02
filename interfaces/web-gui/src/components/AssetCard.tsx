@@ -19,6 +19,7 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [isQuickDownloading, setIsQuickDownloading] = useState(false);
   const [quickDownloadError, setQuickDownloadError] = useState<string | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   
   // Simple product defaults - no complexity
@@ -49,9 +50,40 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
     return () => observer.disconnect();
   }, []);
 
-  // Determine background color - always white for the 3x3 thumbnail area
+  // Theme observer for background updates
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    };
+
+    // Initial check
+    checkTheme();
+
+    // Watch for theme changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          checkTheme();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Determine background color based on asset type and theme
   const getImageBackground = () => {
-    // Requirements specify thumbnail background should be WHITE
+    if (asset.fileType.toLowerCase() === 'jpeg' || asset.fileType.toLowerCase() === 'jpg') {
+      // For JPEG assets: white background for light mode, dark background for dark mode
+      // Use actual Quantic colors directly to avoid CSS variable resolution issues
+      return isDarkMode ? '#13161b' : 'white'; // dark-mode-900 : white
+    }
+    // Non-JPEG assets use white background for preview
     return 'white';
   };
 
@@ -109,7 +141,7 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
       }}
     >
       {/* Image container - 3x3 area */}
-      <div className="relative h-full overflow-hidden p-8 flex items-center justify-center group/image rounded-lg" style={{ backgroundColor: '#ffffff' }}>
+      <div className="relative h-full overflow-hidden p-8 flex items-center justify-center group/image rounded-lg" style={{ backgroundColor: getImageBackground() }}>
         
         {!imageError && shouldLoadImage ? (
           <>

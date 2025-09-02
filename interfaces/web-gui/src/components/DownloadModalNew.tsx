@@ -92,7 +92,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
         return {
           id: variant.colorVariant, // Use color variant as ID (1-color or 2-color)
           displayName: variant.displayName.replace(` (${variant.backgroundMode === 'dark' ? 'Dark' : ''})`, ''), // Clean name
-          aspectRatio: 'aspect-[2/1]', // CIQ logos are wider
+          aspectRatio: 'aspect-square', // Square thumbnails
           logoPath: `/assets/global/CIQ_logos/${filename}`
         };
       });
@@ -135,7 +135,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
       return {
         id: variant.variant,
         displayName: variant.displayName,
-        aspectRatio: variant.variant === 'horizontal' ? 'aspect-[4/3]' : 'aspect-square',
+        aspectRatio: 'aspect-square', // All thumbnails are square
         logoPath: variantUrl
       };
     });
@@ -321,11 +321,19 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
           
           // Convert using data URL to avoid CORS - preserve aspect ratio
           try {
+            const getJpegBackgroundColor = () => {
+              if (assetType === 'jpg') {
+                // Use the same colorMode state as the preview and UI
+                return colorMode === 'dark' ? '#13161b' : '#FFFFFF'; // dark-mode-900 : white
+              }
+              return undefined;
+            };
+
             const conversionOptions: any = {
               format: assetType === 'jpg' ? 'jpeg' : 'png',
               height: scaling.height,
               quality: assetType === 'jpg' ? 0.92 : undefined,
-              backgroundColor: assetType === 'jpg' ? '#FFFFFF' : undefined
+              backgroundColor: getJpegBackgroundColor()
             };
             
             // Only specify width if it's defined (preserve aspect ratio when undefined)
@@ -352,9 +360,11 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
                   canvas.height = scaling.height;
                   canvas.width = scaling.width || Math.round(scaling.height * aspectRatio);
                   
-                  // Clear with transparent or white background
+                  // Apply theme-appropriate background for JPEG
                   if (assetType === 'jpg') {
-                    ctx.fillStyle = '#FFFFFF';
+                    // Use the same colorMode state as the preview and UI
+                    const bgColor = colorMode === 'dark' ? '#13161b' : '#FFFFFF';
+                    ctx.fillStyle = bgColor;
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                   }
                   
@@ -412,7 +422,10 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
       {/* Modal */}
       <div 
         className="relative rounded-lg shadow-xl p-6 w-[507px] max-w-[90vw] max-h-[90vh] overflow-y-auto"
-        style={{ backgroundColor: 'rgba(9, 9, 11, 0.75)' }}
+        style={{ 
+          backgroundColor: 'rgba(9, 9, 11, 0.85)',
+          backdropFilter: 'blur(60px)'
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -507,26 +520,23 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
               };
               
               return (
-                <div key={id} className="flex flex-col items-center">
-                  <button
-                    onClick={() => setSelectedVariant(id)}
-                    className={`aspect-square rounded-lg border-2 transition-all p-4 flex items-center justify-center w-full`}
-                    style={{
-                      opacity: selectedVariant === id ? 1.0 : 0.35,
-                      backgroundColor: colorMode === 'light' 
-                        ? '#f3f4f6'  // Light gray background for light mode
-                        : 'var(--quantic-bg-primary)',  // Dark background for dark mode
-                      borderColor: colorMode === 'light'
-                        ? '#d1d5db'   // Light border for light mode
-                        : 'var(--quantic-border-primary)'   // Dark border for dark mode
-                    }}
-                  >
-                    {getVariantContent()}
-                  </button>
-                  <label className="text-xs text-gray-400 mt-2 text-center">
-                    {displayName.replace(' Logo', '')}
-                  </label>
-                </div>
+                <button
+                  key={id}
+                  onClick={() => setSelectedVariant(id)}
+                  className={`rounded-lg border-2 transition-all p-4 flex items-center justify-center w-full`}
+                  style={{
+                    aspectRatio: '1 / 1', // Enforce perfect 1:1 square ratio
+                    opacity: selectedVariant === id ? 1.0 : 0.35,
+                    backgroundColor: colorMode === 'light' 
+                      ? '#f3f4f6'  // Light gray background for light mode
+                      : 'var(--quantic-bg-primary)',  // Dark background for dark mode
+                    borderColor: colorMode === 'light'
+                      ? '#d1d5db'   // Light border for light mode
+                      : 'var(--quantic-border-primary)'   // Dark border for dark mode
+                  }}
+                >
+                  {getVariantContent()}
+                </button>
               );
             })}
           </div>
