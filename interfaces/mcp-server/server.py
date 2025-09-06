@@ -143,7 +143,7 @@ class SemanticAssetMatcher:
         
         # Generate smart search URL for all asset requests
         import os
-        base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3002')
+        base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3003')
         
         # Use smart search engine to generate appropriate URL
         search_analysis = smart_search.analyze_query(request)
@@ -1246,7 +1246,7 @@ def generate_asset_link(product: str, layout: Optional[str] = None, theme: Optio
     
     # Generate URL using smart search engine  
     import os
-    base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3002')
+    base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3003')
     
     if theme and (layout or format):
         # High specificity - direct modal
