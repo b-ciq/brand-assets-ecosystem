@@ -436,7 +436,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-white">
-            Download fuzzball logo
+            {asset.displayName || asset.title}
           </h2>
           <button
             onClick={onClose}

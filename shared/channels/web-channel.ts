@@ -218,21 +218,12 @@ export class WebChannelAdapter {
   }
 
   /**
-   * Generate display name for asset
+   * Generate display name for asset - simplified to Brand + Object Type
    */
   private generateDisplayName(asset: CoreAsset): string {
     const brand = asset.brand || 'Unknown';
-    const layout = asset.metadata?.layout;
-    const background = asset.metadata?.background;
-
-    if (layout && background) {
-      const layoutName = layout === 'horizontal' ? 'Horizontal' : 
-                        layout === 'vertical' ? 'Vertical' : 
-                        layout === 'symbol' ? 'Icon' : layout;
-      const modeName = background === 'light' ? 'Logo' : 'Logo (Dark)';
-      return `${brand} ${layoutName} ${modeName}`;
-    }
-
+    
+    // Simplified format: just "Brand Logo" (no variant, color, layout details)
     return `${brand} Logo`;
   }
 

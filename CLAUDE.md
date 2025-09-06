@@ -183,3 +183,4 @@ The project has **recently transitioned to a centralized search architecture** w
 - Restart web server to pick up shared package changes
 - Use `USE_CHANNEL_ADAPTER=true npm run dev` for V2 architecture testing
 - Search behavior is centralized - modify patterns in `search-engine.ts` only
+- **DO NOT COMMIT CODE UNLESS EXPLICITLY REQUESTED** - Only commit when user asks

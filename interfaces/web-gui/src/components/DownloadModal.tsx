@@ -287,7 +287,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold" style={{ color: 'var(--quantic-text-primary)' }}>
-            Download Logo
+            {asset.displayName || asset.title}
           </h3>
           <button
             onClick={onClose}
