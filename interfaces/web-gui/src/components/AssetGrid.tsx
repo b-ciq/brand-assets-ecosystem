@@ -69,7 +69,7 @@ export default function AssetGrid({ assets, isLoading = false, isLoadingMore = f
       {!hasMore && assets.length > 0 && !isLoadingMore && (
         <div className="mt-8 text-center">
           <p className="text-sm" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
-            You've reached the end of all available assets
+            You have reached the end of all available assets
           </p>
         </div>
       )}

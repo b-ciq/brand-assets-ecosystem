@@ -36,6 +36,11 @@ export default function Home() {
       const data: SearchResponse = await response.json();
       console.log('Search response:', data);
       console.log('Assets count:', data.assets?.length);
+      console.log('Asset brands:', data.assets?.map(a => `${a.brand} (${a.id})`));
+      
+      // Debug: Check for CIQ logos specifically
+      const ciqAssets = data.assets?.filter(a => a.brand === 'CIQ');
+      console.log('CIQ assets found:', ciqAssets?.length, ciqAssets?.map(a => a.id));
       
       if (append && page > 1) {
         // Append new assets to existing ones
@@ -114,22 +119,6 @@ export default function Home() {
           </div>
         )}
 
-        {!hasSearched && (
-          <div className="text-center py-16">
-            <div className="text-gray-400 text-8xl mb-6">🎨</div>
-            <h2 className="text-2xl mb-4" style={{
-              color: 'var(--quantic-text-primary)',
-              fontFamily: 'var(--quantic-font-family-display)',
-              fontWeight: 'var(--quantic-font-weight-semibold)'
-            }}>
-              Find Your Brand Assets
-            </h2>
-            <p className="max-w-md mx-auto" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
-              Search for logos, icons, and other brand assets. 
-              Use the search bar above to get started.
-            </p>
-          </div>
-        )}
       </main>
     </div>
   );

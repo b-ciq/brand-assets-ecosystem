@@ -285,7 +285,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold" style={{ color: 'var(--quantic-text-primary)' }}>
             Download Logo
           </h3>
@@ -298,13 +298,13 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
           </button>
         </div>
 
-        {/* Preview Section - Always small size for performance */}
-        <div className="mb-6">
-          <div className="text-sm font-medium mb-3" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
+        {/* Preview Section - Compact 1:1 aspect ratio */}
+        <div className="mb-4">
+          <div className="text-sm font-medium mb-2" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
             Preview
           </div>
           <div 
-            className="w-full h-32 rounded-lg border border-[var(--quantic-border-primary)] flex items-center justify-center p-4"
+            className="w-20 h-20 mx-auto rounded-lg border border-[var(--quantic-border-primary)] flex items-center justify-center p-2"
             style={{ 
               backgroundColor: backgroundMode === 'dark' ? '#1a1d23' : '#FFFFFF',
               transition: 'background-color 0.2s ease'
@@ -313,26 +313,17 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
             <img 
               src={previewDataUrl || asset.thumbnailUrl || asset.url}
               alt={asset.title}
-              className="max-w-24 max-h-24 object-contain"
-              style={{ 
-                filter: selectedFormat === 'jpeg' && backgroundMode === 'dark' ? 'none' : 'none',
-                width: 'auto',
-                height: 'auto',
-                maxWidth: '96px',
-                maxHeight: '96px'
-              }}
+              className="w-full h-full object-contain"
             />
           </div>
-          <div className="text-xs mt-2 text-center" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
-            {asset.title} • {LOGO_VARIANTS[selectedVariant]?.label} • {backgroundMode === 'dark' ? 'Dark' : 'Light'} Background
-            <br />
-            <span className="opacity-75">Preview at display size • Download will be {selectedFormat !== 'svg' ? `${getSizeInPixels()}px` : 'vector'}</span>
+          <div className="text-xs mt-1 text-center" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
+            <span className="opacity-75">{LOGO_VARIANTS[selectedVariant]?.label} • {backgroundMode === 'dark' ? 'Dark' : 'Light'} • Download: {selectedFormat !== 'svg' ? `${getSizeInPixels()}px` : 'vector'}</span>
           </div>
         </div>
 
         {/* Step 1: Variant Selection */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-3" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
             1. Choose Layout
           </label>
           <div className="grid grid-cols-3 gap-2">
@@ -340,7 +331,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
               <button
                 key={variant}
                 onClick={() => setSelectedVariant(variant)}
-                className={`p-3 rounded-[8px] border border-solid transition-all cursor-pointer text-center ${
+                className={`p-2 rounded-[8px] border border-solid transition-all cursor-pointer text-center ${
                   selectedVariant === variant 
                     ? 'border-[#097049] bg-[#097049]/10' 
                     : 'border-[#373a41] hover:border-[#535862] bg-[#1a1d23]'
@@ -363,14 +354,14 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
         </div>
 
         {/* Step 2: Background Mode */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-3" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
             2. Background Usage
           </label>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setBackgroundMode('light')}
-              className={`p-3 rounded-[8px] border border-solid transition-all cursor-pointer text-center ${
+              className={`p-2 rounded-[8px] border border-solid transition-all cursor-pointer text-center ${
                 backgroundMode === 'light' 
                   ? 'border-[#097049] bg-[#097049]/10' 
                   : 'border-[#373a41] hover:border-[#535862] bg-[#1a1d23]'
@@ -390,7 +381,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
             </button>
             <button
               onClick={() => setBackgroundMode('dark')}
-              className={`p-3 rounded-[8px] border border-solid transition-all cursor-pointer text-center ${
+              className={`p-2 rounded-[8px] border border-solid transition-all cursor-pointer text-center ${
                 backgroundMode === 'dark' 
                   ? 'border-[#097049] bg-[#097049]/10' 
                   : 'border-[#373a41] hover:border-[#535862] bg-[#1a1d23]'
@@ -412,14 +403,14 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
         </div>
 
         {/* Step 3: Color Mode */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-3" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
             3. Logo Style
           </label>
-          <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="grid grid-cols-2 gap-2 mb-2">
             <button
               onClick={() => setColorMode('1-color')}
-              className={`p-3 rounded-[8px] border border-solid transition-all cursor-pointer text-center ${
+              className={`p-2 rounded-[8px] border border-solid transition-all cursor-pointer text-center ${
                 colorMode === '1-color' 
                   ? 'border-[#097049] bg-[#097049]/10' 
                   : 'border-[#373a41] hover:border-[#535862] bg-[#1a1d23]'
@@ -439,7 +430,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
             </button>
             <button
               onClick={() => setColorMode('2-color')}
-              className={`p-3 rounded-[8px] border border-solid transition-all cursor-pointer text-center ${
+              className={`p-2 rounded-[8px] border border-solid transition-all cursor-pointer text-center ${
                 colorMode === '2-color' 
                   ? 'border-[#097049] bg-[#097049]/10' 
                   : 'border-[#373a41] hover:border-[#535862] bg-[#1a1d23]'
@@ -490,8 +481,8 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
         </div>
 
         {/* Step 4: Format Selection */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-3" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
             4. File Format
           </label>
           <div className={`grid gap-2 ${isOriginalSvg ? 'grid-cols-3' : 'grid-cols-2'}`}>
@@ -503,7 +494,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
               <button
                 key={format}
                 onClick={() => handleFormatSelect(format)}
-                className={`p-3 rounded-[8px] border border-solid transition-all cursor-pointer text-center ${
+                className={`p-2 rounded-[8px] border border-solid transition-all cursor-pointer text-center ${
                   selectedFormat === format 
                     ? 'border-[#097049] bg-[#097049]/10' 
                     : 'border-[#373a41] hover:border-[#535862] bg-[#1a1d23]'
@@ -527,11 +518,11 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
 
         {/* Size Selection (only for PNG/JPEG) */}
         {selectedFormat !== 'svg' && (
-          <div className="mb-6">
-            <label className="block text-sm font-medium mb-3" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
               Size
             </label>
-            <div className="grid grid-cols-4 gap-2 mb-3">
+            <div className="grid grid-cols-4 gap-2 mb-2">
               {(Object.keys(SIZE_PRESETS) as SizePreset[]).map((size) => (
                 <button
                   key={size}
@@ -567,12 +558,12 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
             </div>
             
             {selectedSize === 'custom' && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mt-1">
                 <input
                   type="number"
                   value={customSize}
                   onChange={(e) => setCustomSize(e.target.value)}
-                  className="flex-1 px-3 py-2 rounded-[8px] border border-solid border-[#373a41] bg-[#1a1d23] text-[#cecfd2] text-sm font-['Inter:Regular',_sans-serif] focus:border-[#097049] focus:outline-none transition-colors"
+                  className="flex-1 px-2 py-1 rounded-[8px] border border-solid border-[#373a41] bg-[#1a1d23] text-[#cecfd2] text-sm font-['Inter:Regular',_sans-serif] focus:border-[#097049] focus:outline-none transition-colors"
                   style={{
                     boxShadow: '0px 1px 2px 0px rgba(10,13,18,0.05)'
                   }}
@@ -587,15 +578,15 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
         )}
 
         {/* Download Summary & Button */}
-        <div className="border-t border-[var(--quantic-border-primary)] pt-4">
-          <div className="mb-3 text-sm" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
+        <div className="border-t border-[var(--quantic-border-primary)] pt-3">
+          <div className="mb-2 text-sm" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
             <div className="flex justify-between items-center mb-1">
               <span>File will be:</span>
               <code className="text-xs px-2 py-1 rounded bg-[#1a1d23] text-[#cecfd2]">
                 {generateFileName()}
               </code>
             </div>
-            <div className="text-xs space-y-1 mt-2">
+            <div className="text-xs space-y-0.5 mt-1">
               <div>• {LOGO_VARIANTS[selectedVariant]?.label} layout</div>
               <div>• Optimized for {backgroundMode} backgrounds</div>
               <div>• {colorMode === '1-color' ? `${COLOR_OPTIONS['1-color'][selectedColor]?.label} color` : 'Original 2-color design'}</div>
@@ -607,7 +598,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
           <button
             onClick={handleDownload}
             disabled={isDownloading}
-            className="w-full py-3 px-4 rounded-[8px] border border-solid border-[#097049] bg-[#097049] text-white font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer hover:bg-[#075a37] hover:border-[#075a37] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2 px-4 rounded-[8px] border border-solid border-[#097049] bg-[#097049] text-white font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer hover:bg-[#075a37] hover:border-[#075a37] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download size={16} />
             {isDownloading ? 'Preparing download...' : 'Download Logo'}

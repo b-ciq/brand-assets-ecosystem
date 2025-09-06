@@ -15,7 +15,6 @@ interface DownloadModalProps {
 
 type ColorMode = 'light' | 'dark';
 type LogoVariant = 'horizontal' | 'vertical' | 'symbol';
-type ColorChoice = 'neutral' | 'green';
 type AssetType = 'svg' | 'png' | 'jpg';
 type SizeChoice = 'S' | 'M' | 'L' | 'Custom';
 
@@ -44,21 +43,18 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
   // State declarations first
   const [colorMode, setColorMode] = useState<ColorMode>('light');
   const [selectedVariant, setSelectedVariant] = useState<string>('');
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState<number>(0); // Track position for mode switching
   const [showAdvanced, setShowAdvanced] = useState(false);
   
-  // Handler for color mode changes with auto-selection
+  // Handler for color mode changes with position persistence
   const handleColorModeChange = (newMode: ColorMode) => {
     setColorMode(newMode);
     
-    // Auto-select first available variant for the new mode
-    const newVariants = getDynamicVariants();
-    if (newVariants.length > 0) {
-      setSelectedVariant(newVariants[0].id);
-    }
+    // Keep the same variant position when switching modes
+    // This will be called after colorMode state updates, triggering variant recalculation
   };
   
-  // Advanced options  
-  const [colorChoice, setColorChoice] = useState<ColorChoice>('neutral');
+  // Advanced options
   const [assetType, setAssetType] = useState<AssetType>('png'); // PNG with transparency as default
   const [sizeChoice, setSizeChoice] = useState<SizeChoice>('M');
   const [customSize, setCustomSize] = useState<string>('256'); // Default to medium visual height
@@ -67,15 +63,33 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
   const [isDownloading, setIsDownloading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>('');
 
+  // Smart variant selection system - works for defaults and future MCP integration
+  const selectVariantByIndex = (variants: any[], targetIndex: number = 0) => {
+    if (variants.length === 0) return;
+    
+    // Ensure index is within bounds, fallback to 0 if not
+    const safeIndex = targetIndex < variants.length ? targetIndex : 0;
+    setSelectedVariant(variants[safeIndex].id);
+    setSelectedVariantIndex(safeIndex);
+  };
+
   // Initialize selection when modal opens
   useEffect(() => {
     if (isOpen && !selectedVariant) {
       const variants = getDynamicVariants();
-      if (variants.length > 0) {
-        setSelectedVariant(variants[0].id);
-      }
+      // Use smart default selection (future MCP can override selectedVariantIndex)
+      selectVariantByIndex(variants, selectedVariantIndex);
     }
   }, [isOpen]);
+  
+  // Handle variant updates when colorMode changes (maintain position)
+  useEffect(() => {
+    if (isOpen) {
+      const variants = getDynamicVariants();
+      // Maintain the same position when variants change due to mode switching
+      selectVariantByIndex(variants, selectedVariantIndex);
+    }
+  }, [colorMode, isOpen]); // Trigger when colorMode changes
 
   // Generate dynamic variants based on asset type
   const getDynamicVariants = () => {
@@ -178,13 +192,10 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
         
         let processedSvg = svgContent;
         
-        // Apply color based on mode and choice
+        // Apply color based on mode
         if (colorMode === 'dark') {
           // Dark mode = logo will be on dark background, so use light logo
           processedSvg = manipulateSvgColors(svgContent, '#FFFFFF');
-        } else if (colorChoice === 'green') {
-          // Light mode with green color choice
-          processedSvg = manipulateSvgColors(svgContent, BRAND_COLORS['brand-green']);
         }
         // else: light mode with neutral = use original (likely dark) colors
         
@@ -197,7 +208,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
     };
 
     generatePreview();
-  }, [isOpen, colorMode, colorChoice, asset.url, asset.thumbnailUrl, isOriginalSvg]);
+  }, [isOpen, colorMode, asset.url, asset.thumbnailUrl, isOriginalSvg]);
 
   // Close on escape
   useEffect(() => {
@@ -238,12 +249,11 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
   const generateFileName = () => {
     const baseName = productName.toLowerCase();
     const variant = selectedVariant !== 'horizontal' ? `-${selectedVariant}` : '';
-    const color = colorChoice === 'green' ? '-green' : '';
     const mode = colorMode === 'dark' ? '-light-on-dark' : '';
     const scaling = getOpticalScaling();
     const size = assetType !== 'svg' ? `-${scaling.height}h` : '';
     const ext = assetType === 'jpg' ? 'jpg' : assetType;
-    return `${baseName}${variant}${color}${mode}${size}.${ext}`;
+    return `${baseName}${variant}${mode}${size}.${ext}`;
   };
 
   const handleDownload = async () => {
@@ -257,9 +267,6 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
         const response = await fetch(asset.url);
         let svgContent = await response.text();
         
-        if (colorChoice === 'green') {
-          svgContent = manipulateSvgColors(svgContent, BRAND_COLORS['brand-green']);
-        }
         
         blob = new Blob([svgContent], { type: 'image/svg+xml' });
       } else {
@@ -272,7 +279,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
         console.log('Converting variant:', selectedVariant, 'from URL:', sourceUrl);
         
         // Apply color modifications  
-        if (colorChoice === 'green' || colorMode === 'dark') {
+        if (colorMode === 'dark') {
           try {
             const response = await fetch(sourceUrl);
             if (!response.ok) {
@@ -284,8 +291,6 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
             if (colorMode === 'dark') {
               // Dark mode = white/light logos for dark backgrounds
               processedSvg = manipulateSvgColors(svgContent, '#FFFFFF');
-            } else if (colorChoice === 'green') {
-              processedSvg = manipulateSvgColors(svgContent, BRAND_COLORS['brand-green']);
             }
             
             const encodedSvg = btoa(unescape(encodeURIComponent(processedSvg)));
@@ -429,7 +434,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-white">
             Download fuzzball logo
           </h2>
@@ -442,28 +447,34 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
         </div>
 
         {/* Color Mode */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-300 mb-3">
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Color mode
           </label>
           <div className="flex rounded-lg overflow-hidden border border-gray-600">
             <button
               onClick={() => handleColorModeChange('light')}
-              className={`flex-1 py-3 px-4 text-sm font-medium transition-colors border-r border-gray-600 ${
+              className={`flex-1 py-2 px-4 text-sm font-medium transition-colors border-r border-gray-600 ${
                 colorMode === 'light' 
-                  ? 'bg-gray-500 text-white' 
+                  ? 'text-white' 
                   : 'bg-transparent text-gray-300 hover:bg-gray-600'
               }`}
+              style={{
+                backgroundColor: colorMode === 'light' ? 'var(--quantic-bg-active)' : 'transparent'
+              }}
             >
               Light mode
             </button>
             <button
               onClick={() => handleColorModeChange('dark')}
-              className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
+              className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
                 colorMode === 'dark' 
-                  ? 'bg-gray-500 text-white' 
+                  ? 'text-white' 
                   : 'bg-transparent text-gray-300 hover:bg-gray-600'
               }`}
+              style={{
+                backgroundColor: colorMode === 'dark' ? 'var(--quantic-bg-active)' : 'transparent'
+              }}
             >
               Dark mode
             </button>
@@ -471,11 +482,11 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
         </div>
 
         {/* Select Variant */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-300 mb-3">
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Select variant
           </label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             {variants.map(({ id, displayName, aspectRatio, logoPath }) => {
               // Get the actual logo variant with proper coloring
               const getVariantContent = () => {
@@ -497,9 +508,6 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
                   if (colorMode === 'dark') {
                     // Dark mode: use white/light logos
                     return { filter: 'invert(1)' };
-                  } else if (colorChoice === 'green') {
-                    // Light mode with green choice
-                    return { filter: 'sepia(1) saturate(5) hue-rotate(140deg) brightness(0.8)' };
                   } else {
                     // Light mode with neutral: use dark logos (no filter needed)
                     return { filter: 'none' };
@@ -522,8 +530,13 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
               return (
                 <button
                   key={id}
-                  onClick={() => setSelectedVariant(id)}
-                  className={`rounded-lg border-2 transition-all p-4 flex items-center justify-center w-full`}
+                  onClick={() => {
+                    setSelectedVariant(id);
+                    // Update the index when user manually selects a variant
+                    const variantIndex = variants.findIndex(v => v.id === id);
+                    setSelectedVariantIndex(variantIndex);
+                  }}
+                  className={`rounded-lg border-2 transition-all p-2 flex items-center justify-center w-full`}
                   style={{
                     aspectRatio: '1 / 1', // Enforce perfect 1:1 square ratio
                     opacity: selectedVariant === id ? 1.0 : 0.35,
@@ -543,84 +556,61 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
         </div>
 
         {/* Advanced Options */}
-        <div className="mb-6">
+        <div className="mb-4">
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
           >
             ADVANCED OPTIONS
             {showAdvanced ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
           </button>
           
           {showAdvanced && (
-            <div className="mt-4 space-y-6">
-              {/* Color */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
-                  Color
-                </label>
-                <div className="flex rounded-lg overflow-hidden border border-gray-600">
-                  <button
-                    onClick={() => setColorChoice('neutral')}
-                    className={`flex-1 py-3 px-4 text-sm font-medium transition-colors border-r border-gray-600 ${
-                      colorChoice === 'neutral' 
-                        ? 'bg-gray-500 text-white' 
-                        : 'bg-transparent text-gray-300 hover:bg-gray-600'
-                    }`}
-                  >
-                    Neutral
-                  </button>
-                  <button
-                    onClick={() => setColorChoice('green')}
-                    className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
-                      colorChoice === 'green' 
-                        ? 'bg-gray-500 text-white' 
-                        : 'bg-transparent text-gray-300 hover:bg-gray-600'
-                    }`}
-                  >
-                    Green
-                  </button>
-                </div>
-              </div>
-
+            <div className="mt-3 space-y-4">
               {/* Asset Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Asset type
                 </label>
                 <div className="flex rounded-lg overflow-hidden border border-gray-600">
                   <button
                     onClick={() => setAssetType('svg')}
-                    className={`flex-1 py-3 px-2 text-center transition-colors border-r border-gray-600 ${
+                    className={`flex-1 py-2 px-4 text-sm font-medium transition-colors border-r border-gray-600 ${
                       assetType === 'svg' 
-                        ? 'bg-gray-500 text-white' 
+                        ? 'text-white' 
                         : 'bg-transparent text-gray-300 hover:bg-gray-600'
                     }`}
+                    style={{
+                      backgroundColor: assetType === 'svg' ? 'var(--quantic-bg-active)' : 'transparent'
+                    }}
                   >
-                    <div className="text-sm font-medium">SVG</div>
-                    <div className="text-xs opacity-75">(scalable)</div>
+                    SVG
                   </button>
                   <button
                     onClick={() => setAssetType('png')}
-                    className={`flex-1 py-3 px-2 text-center transition-colors border-r border-gray-600 ${
+                    className={`flex-1 py-2 px-4 text-sm font-medium transition-colors border-r border-gray-600 ${
                       assetType === 'png' 
-                        ? 'bg-gray-500 text-white' 
+                        ? 'text-white' 
                         : 'bg-transparent text-gray-300 hover:bg-gray-600'
                     }`}
+                    style={{
+                      backgroundColor: assetType === 'png' ? 'var(--quantic-bg-active)' : 'transparent'
+                    }}
                   >
-                    <div className="text-sm font-medium">PNG</div>
-                    <div className="text-xs opacity-75">(transparent BG)</div>
+                    PNG
                   </button>
                   <button
                     onClick={() => setAssetType('jpg')}
-                    className={`flex-1 py-3 px-2 text-center transition-colors ${
+                    className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
                       assetType === 'jpg' 
-                        ? 'bg-gray-500 text-white' 
+                        ? 'text-white' 
                         : 'bg-transparent text-gray-300 hover:bg-gray-600'
                     }`}
+                    style={{
+                      backgroundColor: assetType === 'jpg' ? 'var(--quantic-bg-active)' : 'transparent'
+                    }}
                   >
-                    <div className="text-sm font-medium">JPG</div>
-                    <div className="text-xs opacity-75">(scalable)</div>
+                    JPG
                   </button>
                 </div>
               </div>
@@ -628,7 +618,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
               {/* Size */}
               {assetType !== 'svg' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-3">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Size
                   </label>
                   <div className="flex rounded-lg overflow-hidden border border-gray-600">
@@ -636,13 +626,16 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
                       <button
                         key={size}
                         onClick={() => setSizeChoice(size)}
-                        className={`flex-1 py-3 px-2 text-sm font-medium transition-colors ${
+                        className={`flex-1 py-2 px-2 text-sm font-medium transition-colors ${
                           index < 3 ? 'border-r border-gray-600' : ''
                         } ${
                           sizeChoice === size 
-                            ? 'bg-gray-500 text-white' 
+                            ? 'text-white' 
                             : 'bg-transparent text-gray-300 hover:bg-gray-600'
                         }`}
+                        style={{
+                          backgroundColor: sizeChoice === size ? 'var(--quantic-bg-active)' : 'transparent'
+                        }}
                       >
                         {size}
                       </button>
@@ -653,7 +646,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
                       type="number"
                       value={customSize}
                       onChange={(e) => setCustomSize(e.target.value)}
-                      className="mt-3 w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:border-green-500 focus:outline-none"
+                      className="mt-2 w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:border-green-500 focus:outline-none"
                       placeholder="512"
                       min="1"
                       max="4096"
@@ -666,9 +659,9 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
         </div>
 
         {/* Usage Instructions */}
-        <div className="mb-6 p-4 bg-gray-800 rounded-lg">
+        <div className="mb-4 p-3 border-t border-gray-600">
           <p className="text-sm text-gray-300 leading-relaxed">
-            Descriptive usage instructions go here. Keep them concise and actionable. Descriptive usage instructions go here.
+            {colorMode === 'dark' ? 'Dark mode' : 'Light mode'}, {assetType.toUpperCase()}{assetType !== 'svg' ? `, ${sizeChoice === 'Custom' ? customSize : VISUAL_HEIGHT_MAP[sizeChoice]}px height (aspect ratio preserved)` : ' (scalable)'}
           </p>
         </div>
 
@@ -676,7 +669,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
         <button
           onClick={handleDownload}
           disabled={isDownloading}
-          className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:opacity-50 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           <Download size={16} />
           {isDownloading ? 'PREPARING...' : 'DOWNLOAD'}
