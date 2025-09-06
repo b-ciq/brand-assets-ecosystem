@@ -47,7 +47,7 @@ class SmartSearchEngine:
                 'support': ['support', 'ciq support'],
                 'rlc': ['rlc', 'rocky linux commercial', 'rocky linux'],
                 'rlc-ai': ['rlc-ai', 'rlc ai', 'rocky linux ai'],
-                'rlc-hardened': ['rlc-hardened', 'rlc hardened', 'rocky linux hardened'],
+                'rlc-hardened': ['rlc-hardened', 'rlc hardened', 'rocky linux hardened', 'rock', 'rocky'],
                 'rlc-lts': ['rlc-lts', 'rlc lts', 'rocky linux lts', 'long term support', 'lts']
             },
             'format': {
@@ -236,7 +236,7 @@ class SmartSearchEngine:
         """Generate the appropriate URL based on action and parameters"""
         # Use environment variable or default to localhost for development
         import os
-        base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3002')
+        base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3003')
         
         if action == 'direct_modal':
             return self._generate_modal_url(base_url, parameters)

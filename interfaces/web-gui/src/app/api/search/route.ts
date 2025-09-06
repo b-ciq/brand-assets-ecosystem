@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { searchAssets, SimpleSearchFilters } from '@/lib/brandAssetsService';
+import { searchAssets, SimpleSearchFilters } from '@/lib/brandAssetsService-v2';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
