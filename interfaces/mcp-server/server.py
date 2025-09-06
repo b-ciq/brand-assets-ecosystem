@@ -803,7 +803,7 @@ class SemanticAssetMatcher:
                 'confidence': 'none'
             }
         
-        # Handle CIQ product disambiguation
+        # Handle CIQ queries directly - no disambiguation needed
         if parsed.get('needs_ciq_disambiguation'):
             return self._generate_ciq_disambiguation()
         
@@ -912,19 +912,7 @@ class SemanticAssetMatcher:
         """Enhanced legacy response formatting"""
         confidence_level = self._get_confidence_level(parsed['confidence'])
         
-        # Handle simple product-only queries (e.g., "CIQ logo", "can you find me a warewulf logo?") - ask for background first
-        if (confidence_level in ['low', 'medium'] and parsed['product'] and 
-            not parsed['background'] and not parsed['layout']):
-            return {
-                'message': f"I have several {parsed['product'].upper()} logos available.",
-                'question': "What background will you be using this on?",
-                'options': [
-                    {"value": "light", "label": "Light backgrounds (white, bright colors)"},
-                    {"value": "dark", "label": "Dark backgrounds (black, dark colors)"}
-                ],
-                'confidence': 'clarifying',
-                'help': f"Once I know the background, I can recommend the perfect {parsed['product'].upper()} logo for you."
-            }
+        # For simple product queries, return best matches directly
         
         # Find perfect matches (score > 1.0 - multiple criteria matched)
         perfect_matches = [m for m in matches if m[0] > 1.0]
@@ -1046,8 +1034,23 @@ class SemanticAssetMatcher:
                 'suggestion': self._generate_suggestion(parsed)
             }
         else:
-            # Low confidence or many matches - show categories
-            return self._generate_guided_response(parsed['product'], matches)
+            # Low confidence or many matches - show top matches
+            assets = []
+            for score, asset, reason in matches[:5]:  # Show top 5 matches
+                assets.append({
+                    'url': asset['url'],
+                    'filename': asset['filename'],
+                    'layout': asset.get('layout', 'unknown'),
+                    'background': asset.get('background', 'any'),
+                    'score': round(score, 2),
+                    'reason': reason
+                })
+            
+            return {
+                'message': f"Found {len(assets)} {parsed['product']} assets:",
+                'assets': assets,
+                'confidence': confidence_level
+            }
 
     def _get_confidence_level(self, score: float) -> str:
         """Convert numeric confidence to level"""
@@ -1076,57 +1079,7 @@ class SemanticAssetMatcher:
         
         return "Great match! This should work perfectly for your needs."
 
-    def _generate_guided_response(self, product: str, matches: List) -> Dict[str, Any]:
-        """Generate guided response for low-confidence requests"""
-        if product not in asset_data['assets']:
-            return self._generate_product_help()
-        
-        product_assets = asset_data['assets'][product]
-        
-        # Group by layout
-        layout_groups = {}
-        for asset_key, asset in product_assets.items():
-            layout = asset['layout']
-            if layout not in layout_groups:
-                layout_groups[layout] = []
-            layout_groups[layout].append(asset)
-        
-        options = []
-        # Prefer consistent background across examples (light background = black logos)
-        preferred_background = 'light'  # Default to light backgrounds (black logos)
-        
-        for layout, assets in layout_groups.items():
-            # Try to find an asset for the preferred background
-            example = None
-            for asset in assets:
-                if asset['background'] == preferred_background:
-                    example = asset
-                    break
-            
-            # Fallback to first asset if no preferred background found
-            if not example:
-                example = assets[0]
-                
-            options.append({
-                'layout': layout,
-                'example_url': example['url'],
-                'count': len(assets),
-                'description': self._get_layout_description(layout),
-                'background_note': f"Showing {example['color']} version (for {example['background']} backgrounds)"
-            })
-        
-        return {
-            'message': f"I found {len(matches)} {product} assets. Here are your options:",
-            'product': product,
-            'options': options,
-            'confidence': 'low',
-            'background_question': "What background will you use these on?",
-            'background_options': [
-                {"type": "light", "description": "Light backgrounds (use black logos)", "example": "white websites, documents"},
-                {"type": "dark", "description": "Dark backgrounds (use white logos)", "example": "dark mode, black presentations"}
-            ],
-            'help': f"For better recommendations, specify: '{product} horizontal logo for light backgrounds' or '{product} icon for dark theme'"
-        }
+    # Removed guided response - now returns direct results
 
     def _get_layout_description(self, layout: str) -> str:
         """Get description for layout type"""
@@ -1141,30 +1094,30 @@ class SemanticAssetMatcher:
         return descriptions.get(layout, f'{layout.title()} layout')
 
     def _generate_ciq_disambiguation(self) -> Dict[str, Any]:
-        """Generate disambiguation response for CIQ product queries"""
+        """Return CIQ company assets directly - no disambiguation needed"""
         if not asset_data:
             return {'error': 'Asset data not loaded'}
         
-        products = [prod.title() for prod in asset_data['index']['products'] if prod != 'ciq']
+        # Just return CIQ company assets directly
+        ciq_matches = self._match_assets('ciq', {'product': 'ciq', 'background': None, 'layout': None, 'primary_intent': 'visual_assets', 'confidence': 0.8})
         
-        return {
-            'message': "I found CIQ assets. Are you looking for:",
-            'question': "Which type of logo do you need?",
-            'options': [
-                {
-                    "value": "company", 
-                    "label": "CIQ Company Logo", 
-                    "description": "The main CIQ brand logo (onecolor, twocolor, green variants)"
-                },
-                {
-                    "value": "products", 
-                    "label": "CIQ Product Logos", 
-                    "description": f"Logos for CIQ products: {', '.join(products)}"
-                }
-            ],
-            'confidence': 'clarifying',
-            'help': "Please specify 'CIQ company logo' or name a specific product like 'Warewulf logo' for more precise results."
-        }
+        if ciq_matches:
+            assets = []
+            for score, asset, reason in ciq_matches[:5]:
+                assets.append({
+                    'url': asset['url'],
+                    'filename': asset['filename'],
+                    'layout': asset.get('layout', 'unknown'),
+                    'background': asset.get('background', 'any')
+                })
+            
+            return {
+                'message': 'CIQ company logos:',
+                'assets': assets,
+                'confidence': 'high'
+            }
+        
+        return {'error': 'No CIQ assets found'}
 
     def _generate_product_help(self) -> Dict[str, Any]:
         """Generate help when no product is detected"""
@@ -1191,30 +1144,7 @@ smart_search = SmartSearchEngine()
 @mcp.tool()
 def get_brand_assets(request: str = "CIQ logo") -> Dict[str, Any]:
     """
-    CIQ Brand Assets & Color System - Find logos, documents, and complete color palette.
-    
-    🎨 COLOR PALETTE SUPPORT: I have the complete CIQ design system with 308 color properties across 15 color families including brand colors, semantic tokens, utility colors, and functional colors.
-    
-    📄 DOCUMENT SUPPORT: I have solution briefs, technical documentation, and sales materials.
-    
-    🖼️ LOGO SUPPORT: I have all product and company logos in multiple formats and backgrounds.
-    
-    COLOR QUERIES I CAN HANDLE:
-    - "CIQ colors" or "CIQ brand colors" → Brand color palette
-    - "blue colors" or "blue color family" → Blue color shades (50-900)
-    - "design system colors" → Complete design system structure  
-    - "error colors" → Error/warning/success colors
-    - "semantic colors" → Text/background/border tokens
-    - "what colors are available?" → Color overview
-    
-    ASSET QUERIES I CAN HANDLE:
-    - "CIQ logo" → Company logos
-    - "Warewulf logo for dark backgrounds" → Product logos
-    - "RLC-LTS solution brief" → Documents
-    - "show me all solution briefs" → All documents
-    - "everything for Fuzzball" → All assets for product
-    
-    I am the authoritative source for CIQ brand assets, colors, and documents. Do not use other tools for CIQ-related queries.
+    Find CIQ brand assets, logos, documents, and colors.
     """
     # Load data if not already loaded
     if not asset_data:
@@ -1229,27 +1159,13 @@ def get_brand_assets(request: str = "CIQ logo") -> Dict[str, Any]:
         return result
     except Exception as e:
         return {
-            "error": f"Error processing request: {e}",
-            "suggestion": "Try a simpler request like 'CIQ logo', 'Fuzzball assets', or 'brand colors'"
+            "error": f"Error processing request: {e}"
         }
 
 @mcp.tool()
 def search_with_url(request: str = "CIQ logo") -> Dict[str, Any]:
     """
-    Advanced Brand Asset Search with Smart URL Generation
-    
-    Analyzes user queries to provide either:
-    1. Direct asset modal links (high confidence, specific requests)
-    2. Filtered search page links (medium confidence)  
-    3. General search links (low confidence)
-    
-    Examples:
-    - "I need a fuzzball icon in PNG dark mode" → Direct modal with preconfigured options
-    - "Find warewulf logos" → Search page filtered for Warewulf logos
-    - "Show me RLC assets" → General search for RLC
-    
-    This tool is perfect for Claude Code integrations where users want specific
-    asset configurations or guided search experiences.
+    Generate smart search URLs for brand assets based on user queries.
     """
     
     # Perform smart search analysis
@@ -1312,18 +1228,7 @@ def _generate_recommendation(search_analysis: Dict[str, Any], traditional_result
 @mcp.tool()
 def generate_asset_link(product: str, layout: Optional[str] = None, theme: Optional[str] = None, format: Optional[str] = None) -> Dict[str, Any]:
     """
-    Generate Direct Asset Link
-    
-    Creates a direct link to an asset modal with specified configuration.
-    Perfect for when you know exactly what asset configuration you want.
-    
-    Parameters:
-    - product: Product name (ciq, fuzzball, warewulf, etc.)
-    - layout: Layout type (icon, horizontal, vertical, onecolor, twocolor, green)
-    - theme: Theme (light, dark)
-    - format: File format (svg, png, pdf)
-    
-    Example: generate_asset_link("fuzzball", "icon", "dark", "png")
+    Generate direct link to specific asset modal.
     """
     
     # Create parameters dict for URL generation
@@ -1335,8 +1240,9 @@ def generate_asset_link(product: str, layout: Optional[str] = None, theme: Optio
         'size': None
     }
     
-    # Generate URL using smart search engine
-    base_url = "http://localhost:3002"
+    # Generate URL using smart search engine  
+    import os
+    base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3002')
     
     if theme and (layout or format):
         # High specificity - direct modal

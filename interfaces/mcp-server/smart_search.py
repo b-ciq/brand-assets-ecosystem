@@ -234,7 +234,9 @@ class SmartSearchEngine:
     
     def _generate_url(self, action: str, parameters: Dict[str, Optional[str]], query: str) -> str:
         """Generate the appropriate URL based on action and parameters"""
-        base_url = "http://localhost:3002"
+        # Use environment variable or default to localhost for development
+        import os
+        base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3002')
         
         if action == 'direct_modal':
             return self._generate_modal_url(base_url, parameters)
