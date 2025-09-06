@@ -130,27 +130,31 @@ class SemanticAssetMatcher:
         }
 
     def find_assets(self, request: str) -> Dict[str, Any]:
-        """Main asset finding function using declarative rules"""
+        """Main asset finding function - returns direct UI links"""
         if not asset_data:
             return {'error': 'Asset data not loaded'}
         
         # Parse user request
         parsed = self._parse_request(request)
         
-        # Handle color queries
+        # Handle color queries with direct results
         if parsed['primary_intent'] in ['colors', 'color_families', 'design_system']:
             return self._handle_color_query(parsed)
         
-        # Find matching assets
-        if parsed['product']:
-            matches = self._match_assets(parsed['product'], parsed)
-            return self._format_response(matches, parsed)
-        else:
-            # Handle global queries when no specific product detected
-            if parsed['primary_intent'] in ['documents', 'sales_materials', 'technical_docs', 'all_assets']:
-                return self._handle_global_query(parsed)
-            else:
-                return self._generate_product_help()
+        # Generate smart search URL for all asset requests
+        import os
+        base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3002')
+        
+        # Use smart search engine to generate appropriate URL
+        search_analysis = smart_search.analyze_query(request)
+        url = search_analysis['url']
+        
+        # Return simple response with direct link
+        return {
+            'message': f"Here's your link:",
+            'url': url,
+            'confidence': 'high'
+        }
 
     def _parse_request(self, request: str) -> Dict[str, Any]:
         """Parse user request using semantic intent recognition"""
