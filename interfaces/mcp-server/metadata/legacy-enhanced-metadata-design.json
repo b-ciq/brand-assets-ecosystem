@@ -1,0 +1,154 @@
+{
+  "assets": {
+    "ciq": {
+      "primary_logo_light": {
+        "url": "https://raw.githubusercontent.com/b-ciq/brand-assets/main/assets/global/logos/CIQ_logo_twocolor_black_large.png",
+        "filename": "CIQ_logo_twocolor_black_large.png",
+        
+        // 🎯 ENHANCED HUMAN-FRIENDLY METADATA
+        "displayName": "CIQ Primary Logo (Light Backgrounds)",
+        "description": "The main CIQ logo featuring the full company brand with twocolor treatment, optimized for light backgrounds",
+        "category": "primary_branding",
+        "subcategory": "company_logos",
+        
+        // 🎯 USAGE GUIDANCE  
+        "useCases": [
+          "Website headers and main navigation",
+          "Business cards and letterhead",
+          "Presentation title slides",
+          "Official documents and reports",
+          "Print marketing materials"
+        ],
+        "bestFor": ["corporate_communications", "formal_presentations", "print_media"],
+        "avoid": ["small_icons", "social_media_avatars", "mobile_apps"],
+        
+        // 🎯 ENHANCED TECHNICAL SPECS
+        "background": "light",
+        "color": "black",
+        "layout": "twocolor",
+        "type": "logo",
+        "size": "large",
+        "dimensions": {
+          "recommended_min_width": "120px",
+          "aspect_ratio": "3:1",
+          "formats_available": ["png", "svg", "pdf"]
+        },
+        
+        // 🎯 SEARCHABLE TAGS (HUMAN READABLE)
+        "tags": {
+          "primary": ["CIQ logo", "company logo", "main brand"],
+          "usage": ["website header", "business cards", "presentations", "official documents"],
+          "style": ["professional", "corporate", "two-color", "full-brand"],
+          "background": ["light background", "white background", "paper"],
+          "format": ["horizontal", "landscape", "wide"]
+        },
+        
+        // 🎯 RELATIONSHIP & ALTERNATIVES
+        "alternatives": ["primary_logo_dark", "simplified_logo_light"],
+        "complements": ["brand_colors", "typography_system"],
+        "variants": {
+          "dark_version": "primary_logo_dark",
+          "simplified": "simplified_logo_light",
+          "icon_only": "icon_logo_light"
+        }
+      },
+      
+      "icon_logo_light": {
+        "url": "https://raw.githubusercontent.com/b-ciq/brand-assets/main/assets/global/logos/CIQ_icon_square_black_large.png",
+        "filename": "CIQ_icon_square_black_large.png",
+        
+        "displayName": "CIQ Icon Logo (Light Backgrounds)",
+        "description": "Compact square icon version of the CIQ logo, perfect for small spaces and mobile applications",
+        "category": "icon_branding",
+        "subcategory": "app_icons",
+        
+        "useCases": [
+          "Mobile app icons and favicons",
+          "Social media profile pictures", 
+          "Small UI elements and buttons",
+          "Email signatures (compact version)",
+          "Avatar and thumbnail displays"
+        ],
+        "bestFor": ["mobile_apps", "social_media", "small_ui_elements"],
+        "avoid": ["large_displays", "print_materials", "formal_presentations"],
+        
+        "background": "light",
+        "color": "black", 
+        "layout": "square",
+        "type": "icon",
+        "size": "large",
+        "dimensions": {
+          "recommended_min_width": "32px",
+          "aspect_ratio": "1:1",
+          "formats_available": ["png", "svg", "ico"]
+        },
+        
+        "tags": {
+          "primary": ["CIQ icon", "logo icon", "brand symbol"],
+          "usage": ["app icon", "favicon", "social media", "profile picture", "small spaces"],
+          "style": ["compact", "simple", "square", "minimal"],
+          "background": ["light background", "white background"],
+          "format": ["square", "compact", "1:1 ratio"]
+        },
+        
+        "alternatives": ["icon_logo_dark", "primary_logo_light"],
+        "complements": ["primary_logo_light", "app_branding"],
+        "variants": {
+          "dark_version": "icon_logo_dark",
+          "full_logo": "primary_logo_light"
+        }
+      }
+    },
+    
+    "fuzzball": {
+      "primary_logo_light": {
+        "displayName": "Fuzzball Horizontal Logo (Light Backgrounds)",
+        "description": "The main Fuzzball product logo in horizontal layout, ideal for headers and wide format applications",
+        "category": "product_branding",
+        "subcategory": "product_logos",
+        
+        "useCases": [
+          "Product page headers",
+          "Documentation and user guides", 
+          "Email signatures and letterhead",
+          "Wide banner advertisements",
+          "Product comparison charts"
+        ],
+        "bestFor": ["product_marketing", "documentation", "web_headers"],
+        "avoid": ["mobile_icons", "square_spaces", "very_small_sizes"],
+        
+        "tags": {
+          "primary": ["Fuzzball logo", "product logo", "horizontal logo"],
+          "usage": ["product pages", "documentation", "headers", "email signatures"],
+          "style": ["horizontal", "product-focused", "professional"],
+          "background": ["light background", "white background"],
+          "format": ["wide", "horizontal", "landscape"]
+        }
+      }
+    }
+  },
+  
+  // 🎯 ENHANCED TAXONOMY
+  "metadata": {
+    "categories": {
+      "primary_branding": "Main company logos and core brand assets",
+      "product_branding": "Individual product logos and brand elements", 
+      "icon_branding": "Compact icons and symbols for small spaces",
+      "marketing_materials": "Assets for campaigns and promotional content",
+      "documentation": "Assets for technical docs and user guides"
+    },
+    
+    "use_case_taxonomy": {
+      "digital": ["website", "mobile_app", "social_media", "email"],
+      "print": ["business_cards", "letterhead", "brochures", "presentations"],
+      "marketing": ["advertisements", "campaigns", "trade_shows", "merchandise"],
+      "technical": ["documentation", "user_guides", "API_docs", "tutorials"]
+    },
+    
+    "style_attributes": {
+      "formality": ["corporate", "professional", "casual", "playful"],
+      "complexity": ["detailed", "simplified", "minimal", "icon-only"],
+      "color_scheme": ["full-color", "two-color", "monochrome", "outline"]
+    }
+  }
+}
