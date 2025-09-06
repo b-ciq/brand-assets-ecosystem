@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CircleX, Search } from 'lucide-react';
 import { SearchFilters } from '@/types/asset';
 
@@ -92,11 +92,22 @@ function Select({ label = true, hintText = true, supportingText = true, scrollBa
 interface HeaderProps {
   onSearch: (filters: SearchFilters) => void;
   isLoading?: boolean;
+  initialQuery?: string;
+  initialAssetType?: string;
 }
 
-export default function Header({ onSearch, isLoading = false }: HeaderProps) {
-  const [query, setQuery] = useState('');
-  const [assetType, setAssetType] = useState('');
+export default function Header({ onSearch, isLoading = false, initialQuery = '', initialAssetType = '' }: HeaderProps) {
+  const [query, setQuery] = useState(initialQuery);
+  const [assetType, setAssetType] = useState(initialAssetType);
+
+  // Update state when initial values change (e.g., from URL parameters)
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
+  
+  useEffect(() => {
+    setAssetType(initialAssetType);
+  }, [initialAssetType]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

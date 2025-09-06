@@ -14,6 +14,7 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [currentFilters, setCurrentFilters] = useState<SearchFilters>({ query: '' });
+  const [initialFilters, setInitialFilters] = useState<SearchFilters>({ query: '' });
 
   const handleSearch = async (filters: SearchFilters, page: number = 1, append: boolean = false) => {
     if (page === 1) {
@@ -65,10 +66,30 @@ export default function Home() {
     }
   };
 
-  // Load all assets by default (empty search shows everything)
+  // Check for URL parameters and load assets
   useEffect(() => {
-    console.log('Loading default assets...');
-    handleSearch({ query: '' }); // Empty query will show all assets
+    // Parse URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const query = urlParams.get('query');
+    const fileType = urlParams.get('fileType');
+    const assetType = urlParams.get('assetType');
+    
+    // Build initial filters from URL parameters
+    const initialFilters: SearchFilters = {
+      query: query || '',
+      fileType: fileType || undefined,
+      assetType: assetType || undefined,
+    };
+    
+    console.log('Initial load with filters:', initialFilters);
+    
+    // Execute search (empty query will show all assets)
+    handleSearch(initialFilters);
+    
+    // Update current filters state to match URL
+    setCurrentFilters(initialFilters);
+    // Store initial filters for Header component
+    setInitialFilters(initialFilters);
   }, []);
 
   // Load more function for infinite scroll
@@ -102,7 +123,12 @@ export default function Home() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--quantic-bg-primary)' }}>
       {/* Header */}
-      <Header onSearch={handleNewSearch} isLoading={isLoading} />
+      <Header 
+        onSearch={handleNewSearch} 
+        isLoading={isLoading}
+        initialQuery={initialFilters.query || ''}
+        initialAssetType={initialFilters.assetType || ''}
+      />
 
       {/* Main content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
