@@ -6,6 +6,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The Brand Assets Ecosystem is a unified web-based brand asset management system that provides search, browsing, and download capabilities for CIQ product logos and documents. The system uses a centralized Python CLI backend for consistent search results across multiple interfaces.
 
+## functional structure
+
+- unified search provides a reliable, accurate and consistent result regardless of interaction point (web, MCP, slack, etc). We have strctured this with a unified approach so it is easy to maintain and improve upon.
+
+- Asset renderer- some assets may be provided in a limited number of forms but then rendered by the system according to how the user configures the asset. one example of this is that I currently only provide 3 orientation variants in SVG format for each product logo but the system can render these into many colors, sizes and formats for the user to download. this keeps maintenance simple but allows a ton of flexibility for th user. Another example will be in the future when we add PDFs to the type of available assets and the system will render a visual thumbnail of the first page of the pdf to show in the search results view (this functionmality is on the roadmpa but does not exist yet)
+
+## use cases
+user uses claude desktop with the mcp installed and asks: "find me a fuzzball logo" the chat UI responds with: "here is a link to the fuzzball logo" and provide the url to link directly to the web UI showing the preferred fuzzball logo as a search result tile. In the web UI the user can click the download button to get the default version of the asset immediately or can continue to configure the asset manually in the modal window by selecting things like: dark mode, Vertical variant, jpeg, large size and then downloading it.
+
+user uses claude desktop with the mcp installed and asks: "find me a fuzzball logo for dark mode in PNG format" the chat UI responds with: "here is a link to the fuzzball logo you requested" and provides the url to link directly to the web UI showing the fuzzball modal with the requested configuration. The users sees the modal set to dark mode and PNG format. they can download immediately from this screen or can continue to modify the asset configuration further.
+
+
 ## Unified Search Architecture (Implemented Sept 2025)
 
 The project successfully implemented a **unified search architecture** (commit 6c12b38) that consolidates all search logic into a single backend, eliminating inconsistencies between interfaces.
@@ -65,10 +77,13 @@ npm run lint
 cd interfaces/mcp-server
 
 # Test unified search directly (this is what both interfaces should use)
-python3 cli_wrapper.py "fuzzball"     # Returns 3 fuzzball assets
+python3 cli_wrapper.py "fuzzball"     # Returns 1 primary fuzzball asset (horizontal)
 python3 cli_wrapper.py "fuzz"         # Same results (pattern matching)
-python3 cli_wrapper.py "war"          # Returns warewulf assets
-python3 cli_wrapper.py "asc"          # Returns ascender assets
+python3 cli_wrapper.py "war"          # Returns 1 primary warewulf asset
+python3 cli_wrapper.py "asc"          # Returns 1 primary ascender asset
+
+# Test with all variants flag for comprehensive results
+python3 cli_wrapper.py "fuzzball" --show-all-variants  # Returns all 3 fuzzball variants
 ```
 
 ### MCP Server (Fully Unified)
@@ -167,13 +182,17 @@ curl "http://localhost:3000/api/search?query=fuzz" | jq '.assets | length'
 ```bash
 cd interfaces/mcp-server
 
-# Test exact matching
+# Test exact matching (primary variants only)
 python3 cli_wrapper.py "fuzzball"
-# Should return: {"status": "success", "total_found": 3, ...}
+# Should return: {"status": "success", "total_found": 1, ...}
 
 # Test pattern matching
 python3 cli_wrapper.py "fuzz"
 # Should return identical results (proves patterns work)
+
+# Test all variants flag
+python3 cli_wrapper.py "fuzzball" --show-all-variants
+# Should return: {"status": "success", "total_found": 3, ...}
 
 # Test other products
 python3 cli_wrapper.py "war"    # → warewulf
@@ -291,4 +310,37 @@ python3 cli_wrapper.py "roc"    # → rlc-hardened
 - **Pattern Matching**: All fuzzy patterns working perfectly
 - **Validation**: Comprehensive testing passed all acceptance criteria
 
-**🎉 The MCP server now uses the same unified backend as the Web GUI with consistent search results across all interfaces!**
+## ✅ **CENTRALIZED BUSINESS LOGIC PRINCIPLE** (Updated Sept 2025)
+
+### **Single Source of Truth Architecture Enhanced**
+
+**Business Logic Centralization**: All filtering, ranking, and result processing logic now lives in the CLI backend (`cli_wrapper.py`), not in interface layers.
+
+#### **Primary Variant Filtering (Implemented)**:
+- **CLI Backend**: Returns primary variants by default (horizontal layout preferred)
+- **Flag Support**: `--show-all-variants` flag for comprehensive results when needed
+- **Consistent Results**: All interfaces automatically get the same filtered results
+
+#### **Updated Test Commands**:
+```bash
+# Test primary variant filtering (default behavior)
+python3 cli_wrapper.py "fuzzball"                    # Returns 1 primary variant
+python3 cli_wrapper.py "fuzzball" --show-all-variants # Returns all 3 variants
+
+# Both interfaces now return consistent results
+curl "http://localhost:3000/api/search?query=fuzzball" | jq '.total'  # Returns: 1
+# MCP server would also return: total_found: 1
+```
+
+#### **Interface Layer Responsibilities**:
+- **Web GUI**: Minimal transformation, calls CLI backend directly
+- **MCP Server**: Returns CLI results with MCP formatting only  
+- **Future Interfaces**: Automatically consistent without duplicate logic
+
+#### **Benefits Achieved**:
+- ✅ **Consistency**: All interfaces return identical results (1 primary variant)
+- ✅ **Maintainability**: Business rules in one location only
+- ✅ **Scalability**: New interfaces work correctly out of the box
+- ✅ **Single Source of Truth**: CLI backend is authoritative for all search logic
+
+**🎉 The unified architecture now ensures perfect consistency across all interfaces with centralized business logic!**
