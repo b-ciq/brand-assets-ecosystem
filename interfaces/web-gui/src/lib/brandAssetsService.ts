@@ -61,23 +61,23 @@ async function callUnifiedCLI(query: string): Promise<any> {
 }
 
 /**
- * Transform CLI result to Web API format - simple mapping
+ * Transform CLI result to Web API format - simplified since CLI now handles primary variant filtering
  */
-function transformCLIResult(cliResult: any, showPreferredOnly: boolean = true): Asset[] {
+function transformCLIResult(cliResult: any, showAllVariants: boolean = false): Asset[] {
   const assets: Asset[] = [];
   
   if (!cliResult.assets) return assets;
   
-  // Transform each product's assets
+  // Transform each product's assets - CLI backend already filtered to primary variants
   Object.entries(cliResult.assets).forEach(([product, productAssets]: [string, any]) => {
     Object.entries(productAssets).forEach(([assetKey, asset]: [string, any]) => {
-      // Create light mode version
+      // Create primary asset (light mode)
       assets.push({
         id: `${product}-${asset.layout}-light`,
         title: asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset",
         displayName: `${product.toUpperCase()} Logo`,
         description: `${product} ${asset.type} - ${asset.layout}`,
-        url: asset.url, // Use URL as-is (now relative)
+        url: asset.url, // Use URL as-is (relative path)
         thumbnailUrl: asset.url,
         fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
         dimensions: { width: 100, height: 100 },
@@ -88,19 +88,19 @@ function transformCLIResult(cliResult: any, showPreferredOnly: boolean = true): 
         metadata: {
           backgroundMode: 'light',
           variant: asset.layout,
-          isPrimary: asset.layout === 'horizontal',
+          isPrimary: true, // CLI backend returns primary variants
           usageContext: 'general use'
         }
       });
       
-      // Add dark mode version if not showPreferredOnly
-      if (!showPreferredOnly) {
+      // Add dark mode variant if requested (rare case)
+      if (showAllVariants) {
         assets.push({
           id: `${product}-${asset.layout}-dark`,
           title: `${asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset"} (Dark)`,
           displayName: `${product.toUpperCase()} Logo (Dark)`,
           description: `${product} ${asset.type} - ${asset.layout} (dark mode)`,
-          url: asset.url, // Use URL as-is (now relative)
+          url: asset.url,
           thumbnailUrl: asset.url,
           fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
           dimensions: { width: 100, height: 100 },
@@ -119,11 +119,6 @@ function transformCLIResult(cliResult: any, showPreferredOnly: boolean = true): 
     });
   });
   
-  // Filter to preferred only if requested
-  if (showPreferredOnly) {
-    return assets.filter(asset => asset.metadata?.isPrimary);
-  }
-  
   return assets;
 }
 
@@ -134,9 +129,9 @@ export async function searchAssets(query: string, filters?: SimpleSearchFilters)
     // Call unified CLI search directly
     const cliResult = await callUnifiedCLI(query || '');
     
-    // Transform CLI result to web format
-    const showPreferredOnly = filters?.showPreferredOnly !== false;
-    let assets = transformCLIResult(cliResult, showPreferredOnly);
+    // Transform CLI result to web format - CLI already returns primary variants
+    const showAllVariants = filters?.showPreferredOnly === false;
+    let assets = transformCLIResult(cliResult, showAllVariants);
     
     // Apply additional filters if specified
     if (filters) {

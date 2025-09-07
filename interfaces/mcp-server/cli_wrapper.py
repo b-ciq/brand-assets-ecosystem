@@ -61,7 +61,7 @@ def resolve_product_from_query(query: str, patterns: Dict) -> Optional[str]:
     
     return None
 
-def enhanced_search(query: str, asset_data: Dict, patterns: Dict) -> Dict[str, Any]:
+def enhanced_search(query: str, asset_data: Dict, patterns: Dict, show_all_variants: bool = False) -> Dict[str, Any]:
     """Enhanced search with pattern matching and unified logic"""
     if not asset_data or 'assets' not in asset_data:
         return {"error": "No asset data available"}
@@ -137,20 +137,58 @@ def enhanced_search(query: str, asset_data: Dict, patterns: Dict) -> Dict[str, A
         results['ciq'] = ciq_logos
         total_found += len(ciq_logos)
     
+    # Filter to primary variants only unless show_all_variants is True
+    if not show_all_variants and results:
+        filtered_results = {}
+        filtered_total = 0
+        
+        for product, product_assets in results.items():
+            # Find primary variant (horizontal layout preferred, fallback to first available)
+            primary_key = None
+            for asset_key, asset_info in product_assets.items():
+                if asset_info.get('layout') == 'horizontal':
+                    primary_key = asset_key
+                    break
+            
+            # Fallback to first asset if no horizontal found
+            if not primary_key and product_assets:
+                primary_key = list(product_assets.keys())[0]
+            
+            if primary_key:
+                filtered_results[product] = {primary_key: product_assets[primary_key]}
+                filtered_total += 1
+        
+        results = filtered_results
+        total_found = filtered_total
+    
     return {
         'status': 'success',
         'total_found': total_found,
         'assets': results,
         'confidence': 'medium' if total_found > 0 else 'none',
-        'recommendation': f"Found {total_found} assets matching '{query}'"
+        'recommendation': f"Found {total_found} assets matching '{query}'" + (" (primary variants)" if not show_all_variants else " (all variants)")
     }
 
 def main():
-    if len(sys.argv) != 2:
-        print(json.dumps({"error": "Usage: python cli_wrapper.py '<query>'"}))
-        sys.exit(1)
+    # Parse command line arguments
+    import argparse
+    parser = argparse.ArgumentParser(description='Brand Assets Search CLI')
+    parser.add_argument('query', help='Search query')
+    parser.add_argument('--show-all-variants', action='store_true', 
+                       help='Show all asset variants instead of just primary variants')
     
-    query = sys.argv[1]
+    try:
+        args = parser.parse_args()
+        query = args.query
+        show_all_variants = args.show_all_variants
+    except SystemExit:
+        # Fallback to old behavior for backward compatibility
+        if len(sys.argv) == 2:
+            query = sys.argv[1]
+            show_all_variants = False
+        else:
+            print(json.dumps({"error": "Usage: python cli_wrapper.py '<query>' [--show-all-variants]"}))
+            sys.exit(1)
     
     # V2 API proxy disabled for performance - go straight to fast local search
     
@@ -165,7 +203,7 @@ def main():
     search_patterns = load_search_patterns()
     
     # Search using enhanced logic with patterns
-    result = enhanced_search(query, asset_data, search_patterns)
+    result = enhanced_search(query, asset_data, search_patterns, show_all_variants)
     result['_source'] = 'cli_unified_search'
     print(json.dumps(result))
 
