@@ -23,11 +23,11 @@ try:
 except ImportError:
     print("python-dotenv not available, using system environment variables")
 
-# Asset metadata URL - Updated for ecosystem repository
-METADATA_URL = 'https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main/core-mcp-dev/metadata/asset-inventory.json'
+# Asset metadata - Use local file for development
+METADATA_PATH = './metadata/asset-inventory.json'
 
-# Color palette URL - Updated for ecosystem repository  
-COLOR_PALETTE_URL = 'https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main/core-mcp-dev/assets/global/colors/color-palette-dark.json'
+# Color palette - Use local file for development  
+COLOR_PALETTE_PATH = './assets/global/colors/color-palette-dark.json'
 
 # Initialize FastMCP server
 mcp = FastMCP("CIQ Brand Assets")
@@ -37,33 +37,47 @@ asset_data = None
 color_data = None
 
 def load_asset_data():
-    """Load asset metadata from GitHub"""
+    """Load asset metadata from local file"""
     global asset_data
     try:
-        response = requests.get(METADATA_URL, timeout=10)
-        response.raise_for_status()
-        asset_data = response.json()
+        with open(METADATA_PATH, 'r', encoding='utf-8') as f:
+            asset_data = json.load(f)
         
-        # Validate structure
-        if 'assets' not in asset_data or 'rules' not in asset_data or 'index' not in asset_data:
-            raise ValueError("Invalid metadata structure")
+        # For simple asset-only file, create minimal structure
+        if 'assets' in asset_data and 'rules' not in asset_data:
+            # Add minimal required structure for compatibility
+            products = list(asset_data['assets'].keys())
+            total_assets = sum(len(assets) for assets in asset_data['assets'].values())
+            
+            asset_data['index'] = {
+                'total_assets': total_assets,
+                'products': products
+            }
+            asset_data['rules'] = {
+                'confidence_scoring': {
+                    'exact_match': 1.0,
+                    'layout_match': 0.3,
+                    'background_match': 0.4,
+                    'tag_match': 0.2,
+                    'fallback': 0.3
+                }
+            }
         
         total_assets = asset_data['index']['total_assets']
         products_count = len(asset_data['index']['products'])
         
-        print(f"✅ Loaded {total_assets} assets across {products_count} products")
+        print(f"✅ Loaded {total_assets} assets across {products_count} products from local file")
         return True
     except Exception as e:
         print(f"❌ Failed to load asset data: {e}")
         return False
 
 def load_color_data():
-    """Load color palette data from GitHub"""
+    """Load color palette data from local file"""
     global color_data
     try:
-        response = requests.get(COLOR_PALETTE_URL, timeout=10)
-        response.raise_for_status()
-        color_data = response.json()
+        with open(COLOR_PALETTE_PATH, 'r', encoding='utf-8') as f:
+            color_data = json.load(f)
         
         # Validate structure
         if 'colors' not in color_data or 'categories' not in color_data or 'families' not in color_data:
@@ -72,10 +86,10 @@ def load_color_data():
         total_colors = color_data['summary']['total_properties']
         families_count = color_data['summary']['family_count']
         
-        print(f"✅ Loaded {total_colors} color properties across {families_count} color families")
+        print(f"✅ Loaded {total_colors} color properties across {families_count} color families from local file")
         return True
     except Exception as e:
-        print(f"❌ Failed to load color data: {e}")
+        print(f"❌ Failed to load color data: {e} (this is optional)")
         return False
 
 class SemanticAssetMatcher:
