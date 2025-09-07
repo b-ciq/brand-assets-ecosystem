@@ -10,7 +10,7 @@ The Brand Assets Ecosystem is a unified web-based brand asset management system 
 
 - unified search provides a reliable, accurate and consistent result regardless of interaction point (web, MCP, slack, etc). We have strctured this with a unified approach so it is easy to maintain and improve upon.
 
-- Asset renderer- some assets may be provided in a limited number of forms but then rendered by the system according to how the user configures the asset. one example of this is that I currently only provide 3 orientation variants in SVG format for each product logo but the system can render these into many colors, sizes and formats for the user to download. this keeps maintenance simple but allows a ton of flexibility for th user. Another example will be in the future when we add PDFs to the type of available assets and the system will render a visual thumbnail of the first page of the pdf to show in the search results view (this functionmality is on the roadmpa but does not exist yet)
+- Asset renderer- some assets may be provided in a limited number of forms but then rendered by the system according to how the user configures the asset. one example of this is that I currently only provide 3 orientation variants in SVG format for each product logo but the system can render these into many colors, sizes and formats for the user to download. this keeps maintenance simple but allows a ton of flexibility for the user. Another example will be in the future when we add PDFs to the type of available assets and the system will render a visual thumbnail of the first page of the pdf to show in the search results view (this functionmality is on the roadmpa but does not exist yet)
 
 ## use cases
 user uses claude desktop with the mcp installed and asks: "find me a fuzzball logo" the chat UI responds with: "here is a link to the fuzzball logo" and provide the url to link directly to the web UI showing the preferred fuzzball logo as a search result tile. In the web UI the user can click the download button to get the default version of the asset immediately or can continue to configure the asset manually in the modal window by selecting things like: dark mode, Vertical variant, jpeg, large size and then downloading it.
@@ -51,10 +51,8 @@ The project successfully implemented a **unified search architecture** (commit 6
 - **Working Perfectly**: All searches use centralized backend
 - **No Dependencies**: Self-contained, no external services needed
 
-### ✅ **MCP Server Status** (COMPLETED)
-- **Fully Unified**: Now uses centralized `cli_wrapper.py` backend
-- **Code Reduction**: Reduced from 1298→147 lines (92% reduction)  
-- **Working Perfectly**: All acceptance criteria met and validated
+### ✅ **MCP Server Status** (not working)
+
 
 ## Development Commands
 
@@ -356,9 +354,8 @@ curl "http://localhost:3000/api/search?query=fuzzball" | jq '.total'  # Returns:
 ### **MCP Server Rewrite Requirements**:
 
 #### **What We Actually Have**:
-- **Product Logos Only**: fuzzball, warewulf, ascender, rlc-hardened, ciq
-- **Single Format**: SVG files (horizontal layout primary)
-- **Web UI Integration**: Direct links to http://localhost:3000?query={product}
+- **Product Logos Only**: fuzzball, warewulf, ascender, rlc-hardened, ciq. source is black svg format but web ui can render in other colors, formats and sizes.
+
 
 #### **Required MCP Server Architecture**:
 - **Single Tool**: `find_logo(product_name: str)` only
@@ -368,8 +365,8 @@ curl "http://localhost:3000/api/search?query=fuzzball" | jq '.total'  # Returns:
 - **Pattern Matching**: Use existing CLI backend for "fuzz"→"fuzzball" etc.
 
 #### **Success Criteria**:
-- User asks "find me a fuzzball logo" → Returns "Here's the fuzzball logo: http://localhost:3000?query=fuzzball"
-- User asks "warewulf" → Returns warewulf logo link
+- User asks "find me a fuzzball logo" → Returns "Here's the fuzzball logo link to web ui"
+- User asks "warewulf" → Returns warewulf logo link to web ui
 - User asks "color palette" → Returns "Only logos available. Available products: fuzzball, warewulf, ascender, rlc-hardened, ciq"
 - No hallucination of non-existent assets
 - Simple, direct responses only
