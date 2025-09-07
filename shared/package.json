@@ -20,14 +20,6 @@
     "./sdk": {
       "types": "./sdk/index.ts", 
       "default": "./sdk/index.ts"
-    },
-    "./core-api": {
-      "types": "./dist/core-api/index.d.ts",
-      "default": "./dist/core-api/index.js"
-    },
-    "./channels": {
-      "types": "./dist/channels/index.d.ts",
-      "default": "./dist/channels/index.js"
     }
   }
 }

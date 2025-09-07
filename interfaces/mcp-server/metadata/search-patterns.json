@@ -1,0 +1,56 @@
+{
+  "product_patterns": {
+    "fuzzball": [
+      "fuzz",
+      "fuzzy",
+      "fuzzball"
+    ],
+    "ascender": [
+      "asc",
+      "ascend",
+      "ascender",
+      "ascenderpro"
+    ],
+    "warewulf": [
+      "war",
+      "ware",
+      "warewulf",
+      "werewulf",
+      "wulf"
+    ],
+    "rlc-hardened": [
+      "rlc",
+      "roc",
+      "rock",
+      "rocky",
+      "rlc-hardened",
+      "hardened"
+    ],
+    "ciq": [
+      "ciq",
+      "company",
+      "corporate"
+    ]
+  },
+  "search_rules": {
+    "ciq_inclusion": {
+      "description": "When to include CIQ company logos in results",
+      "rules": {
+        "include_for_general_searches": true,
+        "include_for_product_specific": false,
+        "general_search_keywords": ["logo", "brand", "company", "all", ""],
+        "exclude_when_single_product_found": true
+      }
+    },
+    "matching": {
+      "case_sensitive": false,
+      "partial_match": true,
+      "min_query_length": 1
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "description": "Product name patterns and search rules for unified brand asset search",
+    "last_updated": "2025-01-07"
+  }
+}

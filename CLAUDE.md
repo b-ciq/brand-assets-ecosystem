@@ -49,15 +49,18 @@ npm run build && npm start
 npm run lint
 ```
 
-### MCP Server
+### MCP Server (Legacy - V1 Only)
 ```bash
-# Start local development server
+# ⚠️ LEGACY: Only needed for V1 system (port 3002)
+# V2 Channel Adapter (port 3003) uses centralized architecture instead
+
+# Start local development server (V1 only)
 cd interfaces/mcp-server && python3 server.py
 
-# Test MCP queries directly
+# Test MCP queries directly (V1 only)
 python3 interfaces/mcp-server/cli_wrapper.py "CIQ logo"
 
-# FastMCP Cloud Deployment
+# FastMCP Cloud Deployment (V1 only)
 # Production: https://brand-asset-server.fastmcp.app
 # Entrypoint: interfaces/mcp-server/server.py
 # Dependencies: fastmcp, requests (see requirements.txt)
@@ -104,18 +107,20 @@ The project now implements a **channel adapter pattern** with centralized search
 - **V1 Legacy**: `/api/search` (port 3002) - Original implementation
 - **V2 Channel Adapter**: `/api/search-v2` (port 3003) - New centralized architecture
 
-## MCP Server Architecture
+## MCP Server Architecture (Legacy - V1 Only)
 
-The MCP server provides intelligent brand asset discovery with:
+⚠️ **Note**: This is LEGACY architecture used only by V1 (port 3002). V2 (port 3003) uses centralized architecture in `shared/core-api/` instead.
+
+The legacy MCP server provided intelligent brand asset discovery with:
 
 - **Smart Search Engine** (`smart_search.py`) - Query analysis and URL generation
 - **Semantic Asset Matcher** - Intent-based asset matching with confidence scoring
-- **Color Palette Support** - Complete CIQ design system (308 color properties, 15 families)
+- **~~Color Palette Support~~** - ❌ Removed during refactor consolidation
 - **Document Support** - Solution briefs, technical docs, sales materials
 - **Logo Support** - All products in multiple formats/themes
 
-### MCP Tools Available:
-- `get_brand_assets(request)` - Main asset/color search
+### Legacy MCP Tools (V1 Only):
+- `get_brand_assets(request)` - Main asset search
 - `search_with_url(request)` - Smart search with URL generation  
 - `generate_asset_link(product, layout, theme, format)` - Direct asset links
 
@@ -137,29 +142,32 @@ The MCP server provides intelligent brand asset discovery with:
 - Color data: GitHub-hosted design system
 - Shared TypeScript interfaces in `shared/core-api/types.ts` ensure type consistency
 
-## Current Architecture Focus
+## Current Architecture Status
 
-The project has **recently transitioned to a centralized search architecture** with strict object boundaries and consistent multi-interface behavior. Key focus areas:
+The project has **successfully implemented centralized search architecture** with strict object boundaries and consistent multi-interface behavior. 
 
-### **Latest Changes (Current Branch: feature/channel-adapter-architecture)**:
-- ✅ **Fixed Search Logic**: Resolved CIQ logo contamination issues ("fuz", "war", "asc" searches)
-- ✅ **Centralized Product Resolution**: Single source of truth in CoreSearchEngine
-- ✅ **Strict Object Boundaries**: Prevents cross-product search contamination
-- ✅ **Channel Adapter Pattern**: Consistent behavior across Web GUI and MCP interfaces
-- ✅ **Enhanced Pattern Matching**: Support for partial patterns (fuz→fuzzball, war→warewulf, etc.)
+### **✅ COMPLETED Implementation (PR #2: feature/channel-adapter-architecture)**:
+- ✅ **Search Logic Fixed**: Eliminated CIQ logo contamination in specific product searches
+- ✅ **Centralized Product Resolution**: Single source of truth in CoreSearchEngine  
+- ✅ **Strict Object Boundaries**: Perfect search accuracy - no cross-product contamination
+- ✅ **Channel Adapter Pattern**: Both Web GUI and MCP use same centralized search engine
+- ✅ **Enhanced Pattern Matching**: Comprehensive partial patterns (fuz→fuzzball, war→warewulf, asc→ascender, rlc/roc→rlc-hardened)
+- ✅ **Modal Title Fix**: Dynamic human-readable names ("ASCENDER Logo") vs hardcoded text
+- ✅ **MCP URL Consistency**: Fixed MCP server to point to correct interface (port 3003)
 
-### **Core Capabilities**:
+### **Production Status**:
+- **V2 Channel Adapter**: ✅ **PRODUCTION READY** (port 3003) - All issues resolved
+- **V1 Legacy**: Maintained for compatibility (port 3002) but deprecated
+- **Search Quality**: ✅ **ALL REPORTED ISSUES RESOLVED** - Perfect search accuracy achieved
+- **Interface Consistency**: ✅ **MCP and Web GUI now use identical search logic**
+- **Testing**: ✅ **Comprehensive testing completed** - Manual validation passed
+
+### **Core Capabilities** (Fully Implemented):
 - Theme-aware asset downloads with JPEG background color support
-- Modal-based asset previews with preserved logo aspect ratios
+- Modal-based asset previews with preserved logo aspect ratios  
 - Advanced search/filtering with intent classification
 - Comprehensive brand asset browsing across multiple interfaces
-- Real-time debug logging for search behavior analysis
-
-### **Development Status**:
-- **V2 Channel Adapter**: Production-ready (port 3003)
-- **V1 Legacy**: Maintained for compatibility (port 3002)  
-- **Search Quality**: All reported search issues resolved
-- **Testing**: Comprehensive manual testing completed
+- Real-time debug logging for search behavior analysis (🎯 intent, 🔍 CIQ decisions)
 
 ## Key Files for Development
 
@@ -178,9 +186,43 @@ The project has **recently transitioned to a centralized search architecture** w
 - `shared/channels/test-web-channel.ts` - Web channel testing utilities
 - Server logs show real-time debug output with 🎯 and 🔍 indicators
 
-### **Important Notes**:
-- Always run `cd shared && npm run build` after changing core files
-- Restart web server to pick up shared package changes
-- Use `USE_CHANNEL_ADAPTER=true npm run dev` for V2 architecture testing
-- Search behavior is centralized - modify patterns in `search-engine.ts` only
-- **DO NOT COMMIT CODE UNLESS EXPLICITLY REQUESTED** - Only commit when user asks
+## Quick Start Guide
+
+### **For New Development Sessions**:
+1. **Primary Interface**: `cd interfaces/web-gui && USE_CHANNEL_ADAPTER=true npm run dev` (port 3003)
+2. **✅ V2 is Self-Contained**: No external MCP server needed (uses centralized architecture)
+3. **Legacy V1**: If needed: `cd interfaces/mcp-server && python3 server.py` (port 3002 only)
+
+### **Current Project State**:
+- **Main Branch**: All legacy code, original implementation
+- **PR #2**: Complete channel adapter architecture (ready for merge)
+- **Development Focus**: Architecture is complete - focus on new features or bug reports
+- **Search Behavior**: All known search issues resolved with centralized logic
+
+### **Search Testing Commands**:
+```bash
+# Test V2 centralized search API directly
+curl "http://localhost:3003/api/search-v2?query=fuz"    # Should return 1 FUZZBALL result
+curl "http://localhost:3003/api/search-v2?query=war"    # Should return 1 WAREWULF result  
+curl "http://localhost:3003/api/search-v2?query=asc"    # Should return 1 ASCENDER result
+curl "http://localhost:3003/api/search-v2?query=rlc"    # Should return 1 RLC-HARDENED result
+
+# Test MCP URL generation
+python3 -c "from smart_search import SmartSearchEngine; print(SmartSearchEngine().analyze_query('Ascender logo')['url'])"
+```
+
+### **Important Development Notes**:
+- **Build Shared Packages**: Always run `cd shared && npm run build` after changing core files
+- **Restart Required**: Restart web server to pick up shared package changes  
+- **V2 Architecture**: Use `USE_CHANNEL_ADAPTER=true npm run dev` for current implementation
+- **Search Centralization**: All search behavior controlled by `shared/core-api/search-engine.ts`
+- **Debug Output**: Server shows real-time search decisions with 🎯 (intent) and 🔍 (CIQ logic) indicators
+- **Metadata Source**: V2 uses `interfaces/mcp-server/metadata/asset-inventory.json` (8.3KB active file)
+- **Legacy Files**: Files prefixed with `legacy-` are marked for removal (unused by system)
+- **No Commits**: **DO NOT COMMIT CODE UNLESS EXPLICITLY REQUESTED** - Only commit when user asks
+
+### **Common Tasks**:
+- **New Search Patterns**: Modify `CoreSearchEngine.productPatterns` in `search-engine.ts`  
+- **CIQ Logic Changes**: Update `MCPAssetDataSource.search()` in `asset-source.ts`
+- **Web UI Changes**: Use channel adapter pattern in `shared/channels/web-channel.ts`
+- **MCP Updates**: Modify `interfaces/mcp-server/smart_search.py` for URL generation
