@@ -16,9 +16,7 @@
   "include": [
     "types/**/*",
     "sdk/**/*",
-    "utils/**/*",
-    "core-api/**/*",
-    "channels/**/*"
+    "utils/**/*"
   ],
   "exclude": [
     "node_modules",

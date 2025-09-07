@@ -1,17 +1,9 @@
-import { BrandAssetsMCP } from './brandAssetsMCP';
 import { Asset } from '@/types/asset';
+import { spawn } from 'child_process';
+import path from 'path';
 
-// Initialize MCP client with development server paths
-// Can switch between local and FastMCP cloud endpoint for testing
-const USE_CLOUD_ENDPOINT = process.env.USE_CLOUD_ENDPOINT === 'true' || 
-                          (process.env.NODE_ENV === 'production' && process.env.FASTMCP_API_KEY);
-
-const mcp = new BrandAssetsMCP({
-  mcpServerPath: '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/interfaces/mcp-server/server.py',
-  cliWrapperPath: '/Users/bchristensen/Documents/GitHub/brand-assets-ecosystem/interfaces/mcp-server/cli_wrapper.py',
-  cloudEndpoint: 'https://quantic-asset-server.fastmcp.app/mcp',
-  useCloudEndpoint: USE_CLOUD_ENDPOINT
-});
+// Path to unified CLI search
+const CLI_WRAPPER_PATH = path.resolve(process.cwd(), '../mcp-server/cli_wrapper.py');
 
 export interface SimpleSearchResponse {
   assets: Asset[];
@@ -29,89 +21,159 @@ export interface SimpleSearchFilters {
   showPreferredOnly?: boolean; // Default: true - only show preferred variants
 }
 
-export async function searchAssets(query: string, filters?: SimpleSearchFilters): Promise<SimpleSearchResponse> {
-  try {
-    const searchQuery = query || '';
-    const mcpResponse = await mcp.searchAssets(searchQuery);
-    const transformedData = BrandAssetsMCP.transformMCPResponse(mcpResponse);
-    
-    let filteredAssets = transformedData.assets;
+/**
+ * Call unified CLI search directly - no more complex transformations
+ */
+async function callUnifiedCLI(query: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const python = spawn('python3', [CLI_WRAPPER_PATH, query]);
+    let output = '';
+    let errorOutput = '';
 
-    // Remove CIQ contamination for specific product searches
-    const isSpecificProductSearch = mcpResponse.assets && Object.keys(mcpResponse.assets).length === 1 && !Object.keys(mcpResponse.assets).includes('ciq');
-    if (isSpecificProductSearch) {
-      // Filter out CIQ company logos when searching for specific products
-      filteredAssets = filteredAssets.filter(asset => asset.category !== 'company-logo');
-    }
+    python.stdout.on('data', (data) => {
+      output += data.toString();
+    });
 
-    // Show preferred variants by default (5 total: 1 CIQ + 4 product horizontals)
-    const showPreferredOnly = filters?.showPreferredOnly !== false; // Default: true (show preferred)
-    
-    if (showPreferredOnly) {
-      filteredAssets = filteredAssets.filter(asset => {
-        // For CIQ company logos, only show primary (1-color light mode)
-        if (asset.category === 'company-logo') {
-          return asset.metadata?.isPrimary;
-        }
-        // For product logos, only show primary (horizontal light mode)
-        return asset.metadata?.isPrimary;
-      });
-    }
+    python.stderr.on('data', (data) => {
+      errorOutput += data.toString();
+    });
 
-    // Apply filters if provided
-    if (filters) {
-      if (filters.fileType) {
-        filteredAssets = filteredAssets.filter(asset => 
-          asset.fileType.toLowerCase() === filters.fileType!.toLowerCase()
-        );
+    python.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`CLI search failed: ${errorOutput}`));
+        return;
       }
+
+      try {
+        const lines = output.trim().split('\n');
+        const jsonOutput = lines[lines.length - 1];
+        const result = JSON.parse(jsonOutput);
+        resolve(result);
+      } catch (parseError) {
+        reject(new Error(`Failed to parse CLI response: ${parseError}\nOutput: ${output}`));
+      }
+    });
+
+    python.on('error', (error) => {
+      reject(new Error(`Failed to start CLI: ${error.message}`));
+    });
+  });
+}
+
+/**
+ * Transform CLI result to Web API format - simple mapping
+ */
+function transformCLIResult(cliResult: any, showPreferredOnly: boolean = true): Asset[] {
+  const assets: Asset[] = [];
+  
+  if (!cliResult.assets) return assets;
+  
+  // Transform each product's assets
+  Object.entries(cliResult.assets).forEach(([product, productAssets]: [string, any]) => {
+    Object.entries(productAssets).forEach(([assetKey, asset]: [string, any]) => {
+      // Create light mode version
+      assets.push({
+        id: `${product}-${asset.layout}-light`,
+        title: asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset",
+        displayName: `${product.toUpperCase()} Logo`,
+        description: `${product} ${asset.type} - ${asset.layout}`,
+        url: asset.url.replace('localhost:3000', 'localhost:3005'), // Fix URL
+        thumbnailUrl: asset.url.replace('localhost:3000', 'localhost:3005'),
+        fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
+        dimensions: { width: 100, height: 100 },
+        tags: asset.tags || [],
+        brand: product.toUpperCase(),
+        category: 'product-logo',
+        assetType: 'logo',
+        metadata: {
+          backgroundMode: 'light',
+          variant: asset.layout,
+          isPrimary: asset.layout === 'horizontal',
+          usageContext: 'general use'
+        }
+      });
       
-      if (filters.assetType) {
-        filteredAssets = filteredAssets.filter(asset => {
-          // Check if the asset type matches
-          // For documents, we need to check if it's specifically a solution brief
-          if (filters.assetType === 'document') {
-            return asset.description?.toLowerCase().includes('solution') || 
-                   asset.conciseDescription?.toLowerCase().includes('solution') ||
-                   asset.tags?.some(tag => tag.toLowerCase().includes('solution'));
+      // Add dark mode version if not showPreferredOnly
+      if (!showPreferredOnly) {
+        assets.push({
+          id: `${product}-${asset.layout}-dark`,
+          title: `${asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset"} (Dark)`,
+          displayName: `${product.toUpperCase()} Logo (Dark)`,
+          description: `${product} ${asset.type} - ${asset.layout} (dark mode)`,
+          url: asset.url.replace('localhost:3000', 'localhost:3005'),
+          thumbnailUrl: asset.url.replace('localhost:3000', 'localhost:3005'),
+          fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
+          dimensions: { width: 100, height: 100 },
+          tags: [...(asset.tags || []), 'dark-mode'],
+          brand: product.toUpperCase(),
+          category: 'product-logo',
+          assetType: 'logo',
+          metadata: {
+            backgroundMode: 'dark',
+            variant: asset.layout,
+            isPrimary: false,
+            usageContext: 'dark themes'
           }
-          // For logos, check if it's a logo type
-          if (filters.assetType === 'logo') {
-            return asset.description?.toLowerCase().includes('logo') ||
-                   asset.conciseDescription?.toLowerCase().includes('logo') ||
-                   asset.tags?.some(tag => tag.toLowerCase().includes('logo')) ||
-                   asset.metadata?.layout; // Logos typically have layout metadata
-          }
-          return false;
         });
       }
-      
+    });
+  });
+  
+  // Filter to preferred only if requested
+  if (showPreferredOnly) {
+    return assets.filter(asset => asset.metadata?.isPrimary);
+  }
+  
+  return assets;
+}
+
+export async function searchAssets(query: string, filters?: SimpleSearchFilters): Promise<SimpleSearchResponse> {
+  try {
+    console.log(`🔄 Calling unified CLI search for: "${query}"`);
+    
+    // Call unified CLI search directly
+    const cliResult = await callUnifiedCLI(query || '');
+    
+    // Transform CLI result to web format
+    const showPreferredOnly = filters?.showPreferredOnly !== false;
+    let assets = transformCLIResult(cliResult, showPreferredOnly);
+    
+    // Apply additional filters if specified
+    if (filters) {
+      if (filters.fileType) {
+        assets = assets.filter(asset => asset.fileType === filters.fileType);
+      }
+      if (filters.assetType) {
+        assets = assets.filter(asset => asset.assetType === filters.assetType);
+      }
       if (filters.brand) {
-        filteredAssets = filteredAssets.filter(asset => 
-          asset.brand?.toLowerCase() === filters.brand!.toLowerCase()
-        );
+        assets = assets.filter(asset => asset.brand?.toLowerCase() === filters.brand.toLowerCase());
       }
-      
       if (filters.background) {
-        filteredAssets = filteredAssets.filter(asset => 
-          asset.metadata?.background === filters.background
-        );
+        assets = assets.filter(asset => asset.metadata?.backgroundMode === filters.background);
       }
-      
       if (filters.layout) {
-        filteredAssets = filteredAssets.filter(asset => 
-          asset.metadata?.layout === filters.layout
-        );
+        assets = assets.filter(asset => asset.metadata?.variant === filters.layout);
       }
     }
 
+    console.log(`✅ Unified CLI returned ${assets.length} assets for "${query}"`);
+
     return {
-      assets: filteredAssets,
-      total: filteredAssets.length,
-      confidence: transformedData.confidence,
-      recommendation: transformedData.recommendation
+      assets,
+      total: assets.length,
+      confidence: cliResult.confidence || 'medium',
+      recommendation: cliResult.recommendation || `Found ${assets.length} assets`
     };
+
   } catch (error) {
-    throw new Error(`Brand assets search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('Unified CLI search error:', error);
+    
+    return {
+      assets: [],
+      total: 0,
+      confidence: 'none',
+      recommendation: 'Search failed. Please try again.'
+    };
   }
 }
