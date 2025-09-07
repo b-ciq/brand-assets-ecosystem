@@ -77,8 +77,8 @@ function transformCLIResult(cliResult: any, showPreferredOnly: boolean = true): 
         title: asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset",
         displayName: `${product.toUpperCase()} Logo`,
         description: `${product} ${asset.type} - ${asset.layout}`,
-        url: asset.url.replace('localhost:3000', 'localhost:3005'), // Fix URL
-        thumbnailUrl: asset.url.replace('localhost:3000', 'localhost:3005'),
+        url: asset.url, // Use URL as-is (now relative)
+        thumbnailUrl: asset.url,
         fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
         dimensions: { width: 100, height: 100 },
         tags: asset.tags || [],
@@ -100,8 +100,8 @@ function transformCLIResult(cliResult: any, showPreferredOnly: boolean = true): 
           title: `${asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset"} (Dark)`,
           displayName: `${product.toUpperCase()} Logo (Dark)`,
           description: `${product} ${asset.type} - ${asset.layout} (dark mode)`,
-          url: asset.url.replace('localhost:3000', 'localhost:3005'),
-          thumbnailUrl: asset.url.replace('localhost:3000', 'localhost:3005'),
+          url: asset.url, // Use URL as-is (now relative)
+          thumbnailUrl: asset.url,
           fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
           dimensions: { width: 100, height: 100 },
           tags: [...(asset.tags || []), 'dark-mode'],
