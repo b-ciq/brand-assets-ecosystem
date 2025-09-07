@@ -143,7 +143,7 @@ class SemanticAssetMatcher:
         
         # Generate direct web GUI URL for asset requests
         import os
-        base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3003')
+        base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3006')
         
         # Generate basic search URL with query parameter
         url = f"{base_url}?query={request.replace(' ', '+')}"
@@ -1184,7 +1184,7 @@ def search_with_url(request: str = "CIQ logo") -> Dict[str, Any]:
     
     # Generate basic web GUI URL
     import os
-    base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3003')
+    base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3006')
     url = f"{base_url}?query={request.replace(' ', '+')}"
     
     return {
@@ -1204,7 +1204,7 @@ def generate_asset_link(product: str, layout: Optional[str] = None, theme: Optio
     """
     
     import os
-    base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3003')
+    base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3006')
     
     # Build query parameters
     query_parts = [product]
