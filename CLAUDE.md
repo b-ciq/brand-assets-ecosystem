@@ -344,3 +344,38 @@ curl "http://localhost:3000/api/search?query=fuzzball" | jq '.total'  # Returns:
 - ✅ **Single Source of Truth**: CLI backend is authoritative for all search logic
 
 **🎉 The unified architecture now ensures perfect consistency across all interfaces with centralized business logic!**
+
+## ⚠️ **MCP SERVER REWRITE REQUIRED** (Sept 2025)
+
+### **Current MCP Server Issues Identified**:
+1. **Misleading Tool Descriptions**: Claims to have "documents and colors" that don't exist
+2. **MCP Client Hallucination**: Claude generates responses about non-existent "color palettes, brand guidelines"
+3. **Overly Complex Response Format**: Returns technical JSON instead of simple user-friendly responses
+4. **Multiple Confusing Tools**: 3 different tools confuse MCP client about which to use
+
+### **MCP Server Rewrite Requirements**:
+
+#### **What We Actually Have**:
+- **Product Logos Only**: fuzzball, warewulf, ascender, rlc-hardened, ciq
+- **Single Format**: SVG files (horizontal layout primary)
+- **Web UI Integration**: Direct links to http://localhost:3000?query={product}
+
+#### **Required MCP Server Architecture**:
+- **Single Tool**: `find_logo(product_name: str)` only
+- **Simple Responses**: Return plain strings like "Here's the fuzzball logo: [URL]"
+- **Accurate Descriptions**: Only mention logos, not non-existent assets
+- **Direct Web GUI Links**: Point users to web interface for logo download/configuration
+- **Pattern Matching**: Use existing CLI backend for "fuzz"→"fuzzball" etc.
+
+#### **Success Criteria**:
+- User asks "find me a fuzzball logo" → Returns "Here's the fuzzball logo: http://localhost:3000?query=fuzzball"
+- User asks "warewulf" → Returns warewulf logo link
+- User asks "color palette" → Returns "Only logos available. Available products: fuzzball, warewulf, ascender, rlc-hardened, ciq"
+- No hallucination of non-existent assets
+- Simple, direct responses only
+
+### **Implementation Notes**:
+- **Reuse CLI Backend**: Call existing `cli_wrapper.py` (working perfectly)
+- **Keep It Simple**: Single tool, string responses, no complex JSON
+- **Focus on Use Case**: Direct logo links for immediate web UI access
+- **No Feature Creep**: Only logos, nothing else
