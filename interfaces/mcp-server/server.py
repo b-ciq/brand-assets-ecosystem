@@ -10,7 +10,18 @@ import requests
 from typing import Optional, Dict, Any, List, Tuple
 import re
 import os
+from pathlib import Path
 # Removed smart_search and v2_proxy imports - using unified CLI architecture
+
+# Load environment variables from root .env file
+try:
+    from dotenv import load_dotenv
+    # Load from root directory (two levels up from interfaces/mcp-server)
+    root_env_path = Path(__file__).parent.parent.parent / '.env'
+    load_dotenv(root_env_path)
+    print(f"Loaded environment from: {root_env_path}")
+except ImportError:
+    print("python-dotenv not available, using system environment variables")
 
 # Asset metadata URL - Updated for ecosystem repository
 METADATA_URL = 'https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main/core-mcp-dev/metadata/asset-inventory.json'
