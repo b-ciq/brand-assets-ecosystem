@@ -10,8 +10,7 @@ import requests
 from typing import Optional, Dict, Any, List, Tuple
 import re
 import os
-from smart_search import SmartSearchEngine
-from v2_proxy import search_assets_with_v2_fallback
+# Removed smart_search and v2_proxy imports - using unified CLI architecture
 
 # Asset metadata URL - Updated for ecosystem repository
 METADATA_URL = 'https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main/core-mcp-dev/metadata/asset-inventory.json'
@@ -142,19 +141,18 @@ class SemanticAssetMatcher:
         if parsed['primary_intent'] in ['colors', 'color_families', 'design_system']:
             return self._handle_color_query(parsed)
         
-        # Generate smart search URL for all asset requests
+        # Generate direct web GUI URL for asset requests
         import os
         base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3003')
         
-        # Use smart search engine to generate appropriate URL
-        search_analysis = smart_search.analyze_query(request)
-        url = search_analysis['url']
+        # Generate basic search URL with query parameter
+        url = f"{base_url}?query={request.replace(' ', '+')}"
         
         # Return simple response with direct link
         return {
             'message': f"Here's your link:",
             'url': url,
-            'confidence': 'high'
+            'confidence': 'medium'
         }
 
     def _parse_request(self, request: str) -> Dict[str, Any]:
@@ -1142,53 +1140,18 @@ class SemanticAssetMatcher:
             'confidence': 'none'
         }
 
-# Initialize the matcher and smart search engine
+# Initialize the matcher
 matcher = SemanticAssetMatcher()
-smart_search = SmartSearchEngine()
 
 @mcp.tool()
 def get_brand_assets(request: str = "CIQ logo") -> Dict[str, Any]:
     """
     Find CIQ brand assets, logos, documents, and colors.
     
-    Uses V2 API proxy for consistent search results with fallback to legacy search.
+    Uses unified search architecture with semantic asset matching.
     """
     
-    # Try V2 API proxy first for consistent results
-    try:
-        print(f"🔄 Searching via V2 API proxy: '{request}'")
-        v2_result = search_assets_with_v2_fallback(request)
-        
-        # If V2 proxy succeeded, return the result
-        if v2_result['status'] == 'success':
-            print(f"✅ V2 proxy success: {v2_result['total_found']} assets found")
-            return v2_result
-        elif v2_result['status'] == 'fallback_needed':
-            print(f"⚠️ V2 API unavailable, falling back to legacy search")
-            # Continue to legacy search below
-        else:
-            print(f"⚠️ V2 proxy returned: {v2_result['status']}")
-            # Continue to legacy search below
-            
-    except Exception as e:
-        print(f"⚠️ V2 proxy error: {e}, falling back to legacy search")
-        # Continue to legacy search below
-    
-    # Fallback to legacy search
-    print(f"🔄 Using legacy search for: '{request}'")
-    
-    # DEPRECATION WARNING
-    import warnings
-    import os
-    if os.getenv('SHOW_DEPRECATION_WARNINGS', 'true').lower() == 'true':
-        warnings.warn(
-            "⚠️ DEPRECATION: Legacy search fallback is deprecated. "
-            "V2 API proxy should be the primary method. "
-            "Set USE_V2_PROXY=true to enable V2 API proxy.",
-            DeprecationWarning,
-            stacklevel=2
-        )
-        print("⚠️ DEPRECATION WARNING: Using legacy search - V2 API proxy recommended")
+    print(f"🔄 MCP search for: '{request}'")
     
     # Load data if not already loaded
     if not asset_data:
@@ -1200,80 +1163,39 @@ def get_brand_assets(request: str = "CIQ logo") -> Dict[str, Any]:
     
     try:
         result = matcher.find_assets(request)
-        # Add indicator that this is legacy result with deprecation notice
+        # Add source indicator
         if isinstance(result, dict):
-            result['_source'] = 'legacy_search'
-            result['_deprecation_notice'] = 'This search used legacy methods. Consider using V2 API proxy for better consistency.'
+            result['_source'] = 'mcp_search'
         return result
     except Exception as e:
         return {
             "error": f"Error processing request: {e}",
-            "_source": "legacy_search_error",
-            "_deprecation_notice": "Legacy search methods are deprecated. Please use V2 API proxy."
+            "_source": "mcp_search_error"
         }
 
 @mcp.tool()
 def search_with_url(request: str = "CIQ logo") -> Dict[str, Any]:
     """
-    Generate smart search URLs for brand assets based on user queries.
+    Generate search URLs for brand assets based on user queries.
     """
     
-    # Perform smart search analysis
-    search_analysis = smart_search.analyze_query(request)
+    # Get asset search results
+    search_results = matcher.find_assets(request)
     
-    # Get traditional asset search results for context
-    traditional_results = matcher.find_assets(request)
+    # Generate basic web GUI URL
+    import os
+    base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3003')
+    url = f"{base_url}?query={request.replace(' ', '+')}"
     
-    # Combine smart search with traditional results
-    response = {
-        'smart_search': {
-            'intent': search_analysis['intent'],
-            'action': search_analysis['action'],
-            'confidence': search_analysis['confidence'],
-            'url': search_analysis['url'],
-            'explanation': search_analysis['explanation'],
-            'detected_parameters': search_analysis['parameters']
-        },
-        'traditional_search': traditional_results,
-        'recommendation': _generate_recommendation(search_analysis, traditional_results),
-        'query': request
+    return {
+        'url': url,
+        'search_results': search_results,
+        'query': request,
+        'message': f'Search URL generated for: {request}',
+        'confidence': 'medium'
     }
-    
-    return response
 
-def _generate_recommendation(search_analysis: Dict[str, Any], traditional_results: Dict[str, Any]) -> Dict[str, Any]:
-    """Generate recommendation based on smart search and traditional results"""
-    
-    confidence = search_analysis['confidence']
-    action = search_analysis['action']
-    url = search_analysis['url']
-    
-    if action == 'direct_modal':
-        return {
-            'type': 'direct_link',
-            'title': 'Ready to go!',
-            'message': f'I found exactly what you need. Click the link to open the asset with your preferred settings.',
-            'url': url,
-            'confidence': 'high'
-        }
-    
-    elif action == 'filtered_search':
-        return {
-            'type': 'filtered_search',
-            'title': 'Filtered results ready',
-            'message': f'I\'ve prepared a filtered search based on your criteria. This should narrow down your options significantly.',
-            'url': url,
-            'confidence': 'medium'
-        }
-    
-    else:  # generic_search
-        return {
-            'type': 'broad_search', 
-            'title': 'Explore options',
-            'message': f'I\'ll show you a broad search to help you explore available options. You can refine your search from there.',
-            'url': url,
-            'confidence': 'low'
-        }
+# Removed _generate_recommendation - no longer needed with unified architecture
 
 @mcp.tool()
 def generate_asset_link(product: str, layout: Optional[str] = None, theme: Optional[str] = None, format: Optional[str] = None) -> Dict[str, Any]:
@@ -1281,32 +1203,28 @@ def generate_asset_link(product: str, layout: Optional[str] = None, theme: Optio
     Generate direct link to specific asset modal.
     """
     
-    # Create parameters dict for URL generation
-    parameters = {
-        'product': product,
-        'layout': layout,
-        'theme': theme,
-        'format': format,
-        'size': None
-    }
-    
-    # Generate URL using smart search engine  
     import os
     base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3003')
     
-    if theme and (layout or format):
-        # High specificity - direct modal
-        url = smart_search._generate_modal_url(base_url, parameters)
+    # Build query parameters
+    query_parts = [product]
+    if layout:
+        query_parts.append(layout)
+    if theme:
+        query_parts.append(theme)
+    if format:
+        query_parts.append(format)
+    
+    query = ' '.join(query_parts)
+    url = f"{base_url}?query={query.replace(' ', '+')}"
+    
+    if theme and layout:
         confidence = 'high'
-        message = f"Direct link to {product} {layout or 'logo'} for {theme} backgrounds"
+        message = f"Direct link to {product} {layout} logo for {theme} backgrounds"
     elif product:
-        # Medium specificity - filtered search  
-        url = smart_search._generate_search_url(base_url, parameters, f"{product} assets")
         confidence = 'medium'
-        message = f"Filtered search for {product} assets"
+        message = f"Search for {product} assets"
     else:
-        # Low specificity - generic search
-        url = base_url
         confidence = 'low'
         message = "Generic asset browser"
     
