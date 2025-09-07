@@ -2,7 +2,7 @@
   "assets": {
     "ascender": {
       "horizontal_black": {
-        "url": "http://localhost:3000/assets/products/ascender/logos/AscenderPro_logo_h-blk.svg",
+        "url": "/assets/products/ascender/logos/AscenderPro_logo_h-blk.svg",
         "filename": "AscenderPro_logo_h-blk.svg",
         "background": "light",
         "color": "black",
@@ -14,7 +14,7 @@
         ]
       },
       "vertical_black": {
-        "url": "http://localhost:3000/assets/products/ascender/logos/AscenderPro_logo_v-blk.svg",
+        "url": "/assets/products/ascender/logos/AscenderPro_logo_v-blk.svg",
         "filename": "AscenderPro_logo_v-blk.svg",
         "background": "light",
         "color": "black",
@@ -27,7 +27,7 @@
         ]
       },
       "symbol_black": {
-        "url": "http://localhost:3000/assets/products/ascender/logos/AscenderPro_logo_symbol-blk.svg",
+        "url": "/assets/products/ascender/logos/AscenderPro_logo_symbol-blk.svg",
         "filename": "AscenderPro_logo_symbol-blk.svg",
         "background": "light",
         "color": "black",
@@ -39,7 +39,7 @@
     },
     "rlc-hardened": {
       "vertical_black": {
-        "url": "http://localhost:3000/assets/products/rlc-hardened/logos/RLC-H_logo_v-blk.svg",
+        "url": "/assets/products/rlc-hardened/logos/RLC-H_logo_v-blk.svg",
         "filename": "RLC-H_logo_v-blk.svg",
         "background": "light",
         "color": "black",
@@ -52,7 +52,7 @@
         ]
       },
       "symbol_black": {
-        "url": "http://localhost:3000/assets/products/rlc-hardened/logos/RLC-H_logo_symbol-blk.svg",
+        "url": "/assets/products/rlc-hardened/logos/RLC-H_logo_symbol-blk.svg",
         "filename": "RLC-H_logo_symbol-blk.svg",
         "background": "light",
         "color": "black",
@@ -62,7 +62,7 @@
         "tags": []
       },
       "horizontal_black": {
-        "url": "http://localhost:3000/assets/products/rlc-hardened/logos/RLC-H_logo_h-blk.svg",
+        "url": "/assets/products/rlc-hardened/logos/RLC-H_logo_h-blk.svg",
         "filename": "RLC-H_logo_h-blk.svg",
         "background": "light",
         "color": "black",
@@ -76,7 +76,7 @@
     },
     "warewulf": {
       "vertical_black": {
-        "url": "http://localhost:3000/assets/products/warewulf/logos/WarewulfPro_logo_v-blk.svg",
+        "url": "/assets/products/warewulf/logos/WarewulfPro_logo_v-blk.svg",
         "filename": "WarewulfPro_logo_v-blk.svg",
         "background": "light",
         "color": "black",
@@ -89,7 +89,7 @@
         ]
       },
       "symbol_black": {
-        "url": "http://localhost:3000/assets/products/warewulf/logos/WarewulfPro_logo_symbol-blk.svg",
+        "url": "/assets/products/warewulf/logos/WarewulfPro_logo_symbol-blk.svg",
         "filename": "WarewulfPro_logo_symbol-blk.svg",
         "background": "light",
         "color": "black",
@@ -99,7 +99,7 @@
         "tags": []
       },
       "horizontal_black": {
-        "url": "http://localhost:3000/assets/products/warewulf/logos/WarewulfPro_logo_h-blk.svg",
+        "url": "/assets/products/warewulf/logos/WarewulfPro_logo_h-blk.svg",
         "filename": "WarewulfPro_logo_h-blk.svg",
         "background": "light",
         "color": "black",
@@ -113,7 +113,7 @@
     },
     "fuzzball": {
       "horizontal_black": {
-        "url": "http://localhost:3000/assets/products/fuzzball/logos/Fuzzball_logo_h-blk.svg",
+        "url": "/assets/products/fuzzball/logos/Fuzzball_logo_h-blk.svg",
         "filename": "Fuzzball_logo_h-blk.svg",
         "background": "light",
         "color": "black",
@@ -125,7 +125,7 @@
         ]
       },
       "symbol_black": {
-        "url": "http://localhost:3000/assets/products/fuzzball/logos/Fuzzball_logo_symbol-blk.svg",
+        "url": "/assets/products/fuzzball/logos/Fuzzball_logo_symbol-blk.svg",
         "filename": "Fuzzball_logo_symbol-blk.svg",
         "background": "light",
         "color": "black",
@@ -135,7 +135,7 @@
         "tags": []
       },
       "vertical_black": {
-        "url": "http://localhost:3000/assets/products/fuzzball/logos/Fuzzball_logo_v-blk.svg",
+        "url": "/assets/products/fuzzball/logos/Fuzzball_logo_v-blk.svg",
         "filename": "Fuzzball_logo_v-blk.svg",
         "background": "light",
         "color": "black",

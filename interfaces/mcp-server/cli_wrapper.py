@@ -124,7 +124,7 @@ def enhanced_search(query: str, asset_data: Dict, patterns: Dict) -> Dict[str, A
     if should_include_ciq:
         ciq_logos = {
             "horizontal_black": {
-                "url": "http://localhost:3000/assets/global/CIQ_logos/CIQ_logo_1clr_lightmode.svg",
+                "url": "/assets/global/CIQ_logos/CIQ_logo_1clr_lightmode.svg",
                 "filename": "CIQ_logo_1clr_lightmode.svg",
                 "background": "light",
                 "color": "black",
