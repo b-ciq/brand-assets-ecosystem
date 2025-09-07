@@ -77,7 +77,10 @@ def main():
     
     query = sys.argv[1]
     
-    # Load data
+    # V2 API proxy disabled for performance - go straight to fast local search
+    
+    # Fallback to legacy local search
+    print(f"🔄 CLI: Using legacy search for '{query}'", file=sys.stderr)
     asset_data = load_asset_data()
     if not asset_data:
         print(json.dumps({"error": "Failed to load asset data"}))
@@ -85,6 +88,7 @@ def main():
     
     # Search
     result = simple_search(query, asset_data)
+    result['_source'] = 'cli_legacy_search'
     print(json.dumps(result))
 
 if __name__ == "__main__":

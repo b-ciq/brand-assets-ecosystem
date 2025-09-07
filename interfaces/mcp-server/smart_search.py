@@ -39,15 +39,15 @@ class SmartSearchEngine:
         self.param_patterns = {
             'product': {
                 'ciq': ['ciq', 'company', 'brand', 'main'],
-                'fuzzball': ['fuzzball', 'fuzz ball', 'workload', 'hpc'],
-                'warewulf': ['warewulf', 'cluster', 'provisioning'],
-                'apptainer': ['apptainer', 'container', 'scientific'],
-                'ascender': ['ascender', 'automation', 'ansible'],
-                'bridge': ['bridge', 'centos', 'migration'],
-                'support': ['support', 'ciq support'],
+                'fuzzball': ['fuzzball', 'fuzz ball', 'fuzz', 'fuz', 'workload', 'hpc'],
+                'warewulf': ['warewulf', 'ware', 'war', 'cluster', 'provisioning'],
+                'apptainer': ['apptainer', 'app', 'container', 'scientific'],
+                'ascender': ['ascender', 'asc', 'automation', 'ansible'],
+                'bridge': ['bridge', 'bri', 'centos', 'migration'],
+                'support': ['support', 'sup', 'ciq support'],
                 'rlc': ['rlc', 'rocky linux commercial', 'rocky linux'],
                 'rlc-ai': ['rlc-ai', 'rlc ai', 'rocky linux ai'],
-                'rlc-hardened': ['rlc-hardened', 'rlc hardened', 'rocky linux hardened', 'rock', 'rocky'],
+                'rlc-hardened': ['rlc-hardened', 'rlc hardened', 'rocky linux hardened', 'rlc', 'rocky linux commercial', 'rock', 'rocky', 'rocky linux', 'roc'],
                 'rlc-lts': ['rlc-lts', 'rlc lts', 'rocky linux lts', 'long term support', 'lts']
             },
             'format': {

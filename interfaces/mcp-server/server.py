@@ -11,6 +11,7 @@ from typing import Optional, Dict, Any, List, Tuple
 import re
 import os
 from smart_search import SmartSearchEngine
+from v2_proxy import search_assets_with_v2_fallback
 
 # Asset metadata URL - Updated for ecosystem repository
 METADATA_URL = 'https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main/core-mcp-dev/metadata/asset-inventory.json'
@@ -1149,7 +1150,46 @@ smart_search = SmartSearchEngine()
 def get_brand_assets(request: str = "CIQ logo") -> Dict[str, Any]:
     """
     Find CIQ brand assets, logos, documents, and colors.
+    
+    Uses V2 API proxy for consistent search results with fallback to legacy search.
     """
+    
+    # Try V2 API proxy first for consistent results
+    try:
+        print(f"🔄 Searching via V2 API proxy: '{request}'")
+        v2_result = search_assets_with_v2_fallback(request)
+        
+        # If V2 proxy succeeded, return the result
+        if v2_result['status'] == 'success':
+            print(f"✅ V2 proxy success: {v2_result['total_found']} assets found")
+            return v2_result
+        elif v2_result['status'] == 'fallback_needed':
+            print(f"⚠️ V2 API unavailable, falling back to legacy search")
+            # Continue to legacy search below
+        else:
+            print(f"⚠️ V2 proxy returned: {v2_result['status']}")
+            # Continue to legacy search below
+            
+    except Exception as e:
+        print(f"⚠️ V2 proxy error: {e}, falling back to legacy search")
+        # Continue to legacy search below
+    
+    # Fallback to legacy search
+    print(f"🔄 Using legacy search for: '{request}'")
+    
+    # DEPRECATION WARNING
+    import warnings
+    import os
+    if os.getenv('SHOW_DEPRECATION_WARNINGS', 'true').lower() == 'true':
+        warnings.warn(
+            "⚠️ DEPRECATION: Legacy search fallback is deprecated. "
+            "V2 API proxy should be the primary method. "
+            "Set USE_V2_PROXY=true to enable V2 API proxy.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        print("⚠️ DEPRECATION WARNING: Using legacy search - V2 API proxy recommended")
+    
     # Load data if not already loaded
     if not asset_data:
         if not load_asset_data():
@@ -1160,10 +1200,16 @@ def get_brand_assets(request: str = "CIQ logo") -> Dict[str, Any]:
     
     try:
         result = matcher.find_assets(request)
+        # Add indicator that this is legacy result with deprecation notice
+        if isinstance(result, dict):
+            result['_source'] = 'legacy_search'
+            result['_deprecation_notice'] = 'This search used legacy methods. Consider using V2 API proxy for better consistency.'
         return result
     except Exception as e:
         return {
-            "error": f"Error processing request: {e}"
+            "error": f"Error processing request: {e}",
+            "_source": "legacy_search_error",
+            "_deprecation_notice": "Legacy search methods are deprecated. Please use V2 API proxy."
         }
 
 @mcp.tool()

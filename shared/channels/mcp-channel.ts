@@ -14,7 +14,7 @@ import { BrandAssetsCore } from '../core-api';
 export class MCPChannelAdapter {
   constructor(
     private core: BrandAssetsCore,
-    private baseWebURL: string = 'http://localhost:3002'
+    private baseWebURL: string = 'http://localhost:3003'
   ) {}
 
   /**

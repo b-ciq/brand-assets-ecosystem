@@ -37,6 +37,13 @@ export async function searchAssets(query: string, filters?: SimpleSearchFilters)
     
     let filteredAssets = transformedData.assets;
 
+    // Remove CIQ contamination for specific product searches
+    const isSpecificProductSearch = mcpResponse.assets && Object.keys(mcpResponse.assets).length === 1 && !Object.keys(mcpResponse.assets).includes('ciq');
+    if (isSpecificProductSearch) {
+      // Filter out CIQ company logos when searching for specific products
+      filteredAssets = filteredAssets.filter(asset => asset.category !== 'company-logo');
+    }
+
     // Show preferred variants by default (5 total: 1 CIQ + 4 product horizontals)
     const showPreferredOnly = filters?.showPreferredOnly !== false; // Default: true (show preferred)
     
