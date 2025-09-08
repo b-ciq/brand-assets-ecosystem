@@ -71,7 +71,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
         // Cache SVG content on first fetch
         let svgContent = svgCache;
         if (!svgContent) {
-          const response = await fetch(asset.url);
+          const response = await fetch(asset.thumbnailUrl || asset.url);
           svgContent = await response.text();
           setSvgCache(svgContent);
         }
@@ -161,7 +161,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
         // Download colored SVG using cached content
         let svgContent = svgCache;
         if (!svgContent) {
-          const response = await fetch(asset.url);
+          const response = await fetch(asset.thumbnailUrl || asset.url);
           svgContent = await response.text();
         }
         
@@ -182,7 +182,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
           // Use cached SVG content for conversion
           let svgContent = svgCache;
           if (!svgContent) {
-            const response = await fetch(asset.url);
+            const response = await fetch(asset.thumbnailUrl || asset.url);
             svgContent = await response.text();
           }
           
