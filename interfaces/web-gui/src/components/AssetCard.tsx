@@ -130,8 +130,7 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
       className="group cursor-pointer rounded-lg hover:shadow-lg transition-all duration-200 aspect-[3/4] relative overflow-hidden"
       style={{
         backgroundColor: 'var(--quantic-color-gray-dark-mode-850)',
-        border: `1px solid var(--quantic-border-primary)`,
-        ':hover': { borderColor: 'var(--quantic-color-gray-dark-mode-600)' }
+        border: `1px solid var(--quantic-border-primary)`
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = 'var(--quantic-color-gray-dark-mode-600)';

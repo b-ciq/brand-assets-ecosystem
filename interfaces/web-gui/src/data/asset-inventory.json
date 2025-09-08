@@ -1,0 +1,267 @@
+{
+  "assets": {
+    "ascender": {
+      "horizontal_black": {
+        "url": "/assets/products/ascender/logos/AscenderPro_logo_h-blk.svg",
+        "filename": "AscenderPro_logo_h-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "horizontal",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "wide_format"
+        ]
+      },
+      "vertical_black": {
+        "url": "/assets/products/ascender/logos/AscenderPro_logo_v-blk.svg",
+        "filename": "AscenderPro_logo_v-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "vertical",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "tall_banner",
+          "stacked"
+        ]
+      },
+      "symbol_black": {
+        "url": "/assets/products/ascender/logos/AscenderPro_logo_symbol-blk.svg",
+        "filename": "AscenderPro_logo_symbol-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "symbol",
+        "type": "logo",
+        "size": "large",
+        "tags": []
+      }
+    },
+    "rlc-hardened": {
+      "vertical_black": {
+        "url": "/assets/products/rlc-hardened/logos/RLC-H_logo_v-blk.svg",
+        "filename": "RLC-H_logo_v-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "vertical",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "tall_banner",
+          "stacked"
+        ]
+      },
+      "symbol_black": {
+        "url": "/assets/products/rlc-hardened/logos/RLC-H_logo_symbol-blk.svg",
+        "filename": "RLC-H_logo_symbol-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "symbol",
+        "type": "logo",
+        "size": "large",
+        "tags": []
+      },
+      "horizontal_black": {
+        "url": "/assets/products/rlc-hardened/logos/RLC-H_logo_h-blk.svg",
+        "filename": "RLC-H_logo_h-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "horizontal",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "wide_format"
+        ]
+      }
+    },
+    "warewulf": {
+      "vertical_black": {
+        "url": "/assets/products/warewulf/logos/WarewulfPro_logo_v-blk.svg",
+        "filename": "WarewulfPro_logo_v-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "vertical",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "tall_banner",
+          "stacked"
+        ]
+      },
+      "symbol_black": {
+        "url": "/assets/products/warewulf/logos/WarewulfPro_logo_symbol-blk.svg",
+        "filename": "WarewulfPro_logo_symbol-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "symbol",
+        "type": "logo",
+        "size": "large",
+        "tags": []
+      },
+      "horizontal_black": {
+        "url": "/assets/products/warewulf/logos/WarewulfPro_logo_h-blk.svg",
+        "filename": "WarewulfPro_logo_h-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "horizontal",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "wide_format"
+        ]
+      }
+    },
+    "fuzzball": {
+      "horizontal_black": {
+        "url": "/assets/products/fuzzball/logos/Fuzzball_logo_h-blk.svg",
+        "filename": "Fuzzball_logo_h-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "horizontal",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "wide_format"
+        ]
+      },
+      "symbol_black": {
+        "url": "/assets/products/fuzzball/logos/Fuzzball_logo_symbol-blk.svg",
+        "filename": "Fuzzball_logo_symbol-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "symbol",
+        "type": "logo",
+        "size": "large",
+        "tags": []
+      },
+      "vertical_black": {
+        "url": "/assets/products/fuzzball/logos/Fuzzball_logo_v-blk.svg",
+        "filename": "Fuzzball_logo_v-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "vertical",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "tall_banner",
+          "stacked"
+        ]
+      }
+    }
+  },
+  "rules": {
+    "use_case_matching": {
+      "favicon": {
+        "prefer_layout": "icon",
+        "prefer_size": "large",
+        "description": "Small square icon for browser tabs"
+      },
+      "app_icon": {
+        "prefer_layout": "icon",
+        "prefer_size": "large",
+        "description": "Application icon for software"
+      },
+      "business_card": {
+        "prefer_layout": "horizontal",
+        "prefer_size": "large",
+        "description": "Logo for business cards and professional materials"
+      },
+      "email_signature": {
+        "prefer_layout": "horizontal",
+        "prefer_size": "large",
+        "description": "Logo for email signatures"
+      },
+      "letterhead": {
+        "prefer_layout": "horizontal",
+        "prefer_size": "large",
+        "description": "Logo for official letterhead"
+      },
+      "website_header": {
+        "prefer_layout": "horizontal",
+        "prefer_size": "large",
+        "description": "Logo for website headers"
+      },
+      "mobile_app": {
+        "prefer_layout": "vertical",
+        "prefer_size": "large",
+        "description": "Logo optimized for mobile layouts"
+      },
+      "social_media": {
+        "prefer_layout": "vertical",
+        "prefer_size": "large",
+        "description": "Logo for social media profiles"
+      },
+      "presentation": {
+        "prefer_layout": "horizontal",
+        "prefer_size": "large",
+        "description": "Logo for presentations and slides"
+      }
+    },
+    "background_matching": {
+      "light": {
+        "prefer_color": "black",
+        "description": "Dark logos on light backgrounds"
+      },
+      "dark": {
+        "prefer_color": "white",
+        "description": "Light logos on dark backgrounds"
+      },
+      "any": {
+        "prefer_color": "color",
+        "fallback_color": "black",
+        "description": "Color logos that work on various backgrounds"
+      }
+    },
+    "ciq_variant_rules": {
+      "main_branding": {
+        "prefer_variant": "twocolor",
+        "description": "Most recognizable CIQ branding - use when logo is the star"
+      },
+      "supporting": {
+        "prefer_variant": "onecolor",
+        "description": "Clean, professional - won't compete with other elements"
+      },
+      "accent": {
+        "prefer_variant": "green",
+        "description": "Use when you need the logo to pop in neutral designs"
+      }
+    },
+    "confidence_scoring": {
+      "exact_match": 1.0,
+      "layout_match": 0.8,
+      "background_match": 0.7,
+      "tag_match": 0.6,
+      "fallback": 0.3
+    }
+  },
+  "index": {
+    "products": [
+      "ascender",
+      "fuzzball",
+      "rlc-hardened",
+      "warewulf"
+    ],
+    "layouts": [
+      "horizontal",
+      "symbol",
+      "vertical"
+    ],
+    "colors": [
+      "black"
+    ],
+    "backgrounds": [
+      "light"
+    ],
+    "doc_types": [],
+    "tags": [
+      "stacked",
+      "tall_banner",
+      "wide_format"
+    ],
+    "total_assets": 12
+  },
+  "colors": {
+    "available": false,
+    "reason": "Color palette file not found"
+  }
+}

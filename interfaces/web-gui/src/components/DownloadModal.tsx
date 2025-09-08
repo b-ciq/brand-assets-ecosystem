@@ -78,7 +78,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
         
         let processedSvg = svgContent;
         if (colorMode === '1-color' && selectedColor !== 'white') {
-          const colorValue = COLOR_OPTIONS['1-color'][selectedColor]?.value;
+          const colorValue = COLOR_OPTIONS['1-color'][selectedColor as keyof typeof COLOR_OPTIONS['1-color']]?.value;
           if (colorValue) {
             processedSvg = manipulateSvgColors(svgContent, colorValue);
           }
@@ -166,7 +166,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
         }
         
         if (colorMode === '1-color' && selectedColor !== 'white') {
-          const colorValue = COLOR_OPTIONS['1-color'][selectedColor]?.value;
+          const colorValue = COLOR_OPTIONS['1-color'][selectedColor as keyof typeof COLOR_OPTIONS['1-color']]?.value;
           if (colorValue) {
             svgContent = manipulateSvgColors(svgContent, colorValue);
           }
@@ -186,7 +186,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
             svgContent = await response.text();
           }
           
-          const colorValue = COLOR_OPTIONS['1-color'][selectedColor]?.value;
+          const colorValue = COLOR_OPTIONS['1-color'][selectedColor as keyof typeof COLOR_OPTIONS['1-color']]?.value;
           if (colorValue) {
             const coloredSvg = manipulateSvgColors(svgContent, colorValue);
             const encodedSvg = btoa(unescape(encodeURIComponent(coloredSvg)));
@@ -455,10 +455,10 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
           {/* Color Selection for 1-color mode */}
           {colorMode === '1-color' && (
             <div className="grid grid-cols-3 gap-2">
-              {(Object.entries(COLOR_OPTIONS['1-color']) as [BrandColor, typeof COLOR_OPTIONS['1-color'][BrandColor]][]).map(([color, { label, value, preview }]) => (
+              {Object.entries(COLOR_OPTIONS['1-color']).map(([color, { label, value, preview }]) => (
                 <button
                   key={color}
-                  onClick={() => setSelectedColor(color)}
+                  onClick={() => setSelectedColor(color as any)}
                   className={`p-2 rounded-[8px] border border-solid transition-all cursor-pointer text-center ${
                     selectedColor === color 
                       ? 'border-[#097049] bg-[#097049]/10' 
@@ -538,7 +538,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
                 >
                   {size}
                   <div className="text-xs opacity-75">
-                    {SIZE_PRESETS[size]}px
+                    {SIZE_PRESETS[size as keyof typeof SIZE_PRESETS]}px
                   </div>
                 </button>
               ))}
@@ -589,7 +589,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
             <div className="text-xs space-y-0.5 mt-1">
               <div>• {LOGO_VARIANTS[selectedVariant]?.label} layout</div>
               <div>• Optimized for {backgroundMode} backgrounds</div>
-              <div>• {colorMode === '1-color' ? `${COLOR_OPTIONS['1-color'][selectedColor]?.label} color` : 'Original 2-color design'}</div>
+              <div>• {colorMode === '1-color' ? `${COLOR_OPTIONS['1-color'][selectedColor as keyof typeof COLOR_OPTIONS['1-color']]?.label} color` : 'Original 2-color design'}</div>
               <div>• {selectedFormat.toUpperCase()} format{selectedFormat === 'jpeg' ? ` with ${backgroundMode} background` : ' with transparent background'}</div>
               {selectedFormat !== 'svg' && <div>• {getSizeInPixels()}px size</div>}
             </div>
