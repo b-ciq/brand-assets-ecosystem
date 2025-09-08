@@ -74,6 +74,43 @@
         ]
       }
     },
+    "rlc-ai": {
+      "vertical_black": {
+        "url": "/assets/products/rlc-ai/logos/RLC-AI_logo_v-blk.svg",
+        "filename": "RLC-AI_logo_v-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "vertical",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "tall_banner",
+          "stacked"
+        ]
+      },
+      "symbol_black": {
+        "url": "/assets/products/rlc-ai/logos/RLC-AI_logo_symbol-blk.svg",
+        "filename": "RLC-AI_logo_symbol-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "symbol",
+        "type": "logo",
+        "size": "large",
+        "tags": []
+      },
+      "horizontal_black": {
+        "url": "/assets/products/rlc-ai/logos/RLC-AI_logo_h-blk.svg",
+        "filename": "RLC-AI_logo_h-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "horizontal",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "wide_format"
+        ]
+      }
+    },
     "warewulf": {
       "vertical_black": {
         "url": "/assets/products/warewulf/logos/WarewulfPro_logo_v-blk.svg",
@@ -239,6 +276,7 @@
       "ascender",
       "fuzzball",
       "rlc-hardened",
+      "rlc-ai",
       "warewulf"
     ],
     "layouts": [
@@ -258,7 +296,7 @@
       "tall_banner",
       "wide_format"
     ],
-    "total_assets": 12
+    "total_assets": 15
   },
   "colors": {
     "available": false,
