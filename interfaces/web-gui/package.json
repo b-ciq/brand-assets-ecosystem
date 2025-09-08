@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "build:demo": "NEXT_PUBLIC_DEMO_MODE=true next build",
+    "build:demo": "mv src/app/api/search/route.ts src/app/api/search/route.ts.temp && NEXT_PUBLIC_DEMO_MODE=true next build; mv src/app/api/search/route.ts.temp src/app/api/search/route.ts",
     "start": "next start",
     "lint": "eslint"
   },

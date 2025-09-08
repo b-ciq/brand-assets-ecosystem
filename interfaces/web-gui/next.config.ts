@@ -24,7 +24,8 @@ const nextConfig: NextConfig = {
   // Environment variables
   env: {
     DEMO_MODE: isDemoMode ? 'true' : 'false',
-  }
+  },
+
 };
 
 export default nextConfig;
