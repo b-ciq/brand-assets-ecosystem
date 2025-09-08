@@ -6,6 +6,7 @@ import { X, Download, ChevronRight, ChevronDown } from 'lucide-react';
 import { convertSvgToRaster, isSvgUrl, getFileExtension } from '@/lib/svgConverter';
 import { manipulateSvgColors, BRAND_COLORS } from '@/lib/svgColorTest';
 import { getVariantMetadata, getPrimaryVariant, isCIQCompanyLogo, getCIQVariantMetadata, getPrimaryCIQVariant } from '@/lib/productDefaults';
+import { SizeChoice, SIZE_PRESETS, DEFAULT_SIZE, getSizePixels, SIZE_LABELS, CUSTOM_SIZE_CONSTRAINTS, validateCustomSize } from '@/lib/sizeConstants';
 
 interface DownloadModalProps {
   asset: Asset;
@@ -16,14 +17,9 @@ interface DownloadModalProps {
 type ColorMode = 'light' | 'dark';
 type LogoVariant = 'horizontal' | 'vertical' | 'symbol';
 type AssetType = 'svg' | 'png' | 'jpg';
-type SizeChoice = 'S' | 'M' | 'L' | 'Custom';
 
-// Visual height sizing - consistent optical size across orientations
-const VISUAL_HEIGHT_MAP = {
-  S: 128,  // Small visual height
-  M: 256,  // Medium visual height  
-  L: 512   // Large visual height
-};
+// Width-based sizing system - now using centralized constants
+// S: 512px, M: 1024px, L: 2048px width with maintained aspect ratios
 
 export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadModalProps) {
   // Extract product name from asset for dynamic variant generation
@@ -56,8 +52,9 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
   
   // Advanced options
   const [assetType, setAssetType] = useState<AssetType>('png'); // PNG with transparency as default
-  const [sizeChoice, setSizeChoice] = useState<SizeChoice>('M');
-  const [customSize, setCustomSize] = useState<string>('256'); // Default to medium visual height
+  const [sizeChoice, setSizeChoice] = useState<SizeChoice>(DEFAULT_SIZE);
+  const [customSize, setCustomSize] = useState<string>(CUSTOM_SIZE_CONSTRAINTS.default.toString()); // Default to medium width
+  const [customSizeError, setCustomSizeError] = useState<string>(''); // Error message for invalid custom size
   
   // State
   const [isDownloading, setIsDownloading] = useState(false);
@@ -233,16 +230,14 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
 
   // Calculate scaling preserving original SVG aspect ratios - NEVER distort logos
   const getOpticalScaling = () => {
-    const targetHeight = sizeChoice === 'Custom' 
-      ? parseInt(customSize) || 256 
-      : VISUAL_HEIGHT_MAP[sizeChoice];
+    const targetWidth = getSizePixels(sizeChoice, customSize);
     
-    // Always scale by height only, let width scale naturally to preserve aspect ratio
+    // Width-based scaling system: specify width, let height scale naturally to preserve aspect ratio
     // The SVG converter will maintain the original aspect ratio automatically
     return {
-      height: targetHeight,
-      // Don't specify width - let SVG converter preserve original aspect ratio
-      width: undefined
+      width: targetWidth,
+      // Don't specify height - let SVG converter preserve original aspect ratio
+      height: undefined
     };
   };
 
@@ -251,7 +246,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
     const variant = selectedVariant !== 'horizontal' ? `-${selectedVariant}` : '';
     const mode = colorMode === 'dark' ? '-light-on-dark' : '';
     const scaling = getOpticalScaling();
-    const size = assetType !== 'svg' ? `-${scaling.height}h` : '';
+    const size = assetType !== 'svg' ? `-${scaling.width}px` : '';
     const ext = assetType === 'jpg' ? 'jpg' : assetType;
     return `${baseName}${variant}${mode}${size}.${ext}`;
   };
@@ -270,7 +265,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
         
         blob = new Blob([svgContent], { type: 'image/svg+xml' });
       } else {
-        // Raster conversion with optical scaling
+        // Raster conversion with width-based scaling
         const scaling = getOpticalScaling();
         
         // Get the correct variant URL for the selected orientation
@@ -622,7 +617,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
                     Size
                   </label>
                   <div className="flex rounded-lg overflow-hidden border border-gray-600">
-                    {(['S', 'M', 'L', 'Custom'] as const).map((size, index) => (
+                    {(['S', 'M', 'L', 'Custom Width'] as const).map((size, index) => (
                       <button
                         key={size}
                         onClick={() => setSizeChoice(size)}
@@ -641,16 +636,29 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
                       </button>
                     ))}
                   </div>
-                  {sizeChoice === 'Custom' && (
-                    <input
-                      type="number"
-                      value={customSize}
-                      onChange={(e) => setCustomSize(e.target.value)}
-                      className="mt-2 w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:border-green-500 focus:outline-none"
-                      placeholder="512"
-                      min="1"
-                      max="4096"
-                    />
+                  {sizeChoice === 'Custom Width' && (
+                    <div>
+                      <input
+                        type="number"
+                        value={customSize}
+                        onChange={(e) => {
+                          const newValue = e.target.value;
+                          setCustomSize(newValue);
+                          // Validate and set error message
+                          const validation = validateCustomSize(newValue);
+                          setCustomSizeError(validation.errorMessage || '');
+                        }}
+                        className="mt-2 w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:border-green-500 focus:outline-none"
+                        placeholder={CUSTOM_SIZE_CONSTRAINTS.default.toString()}
+                        min={CUSTOM_SIZE_CONSTRAINTS.min.toString()}
+                        max={CUSTOM_SIZE_CONSTRAINTS.max.toString()}
+                      />
+                      {customSizeError && (
+                        <div className="mt-1 text-sm text-red-400">
+                          {customSizeError}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
@@ -661,7 +669,7 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
         {/* Usage Instructions */}
         <div className="mb-4 p-3 border-t border-gray-600">
           <p className="text-sm text-gray-300 leading-relaxed">
-            {colorMode === 'dark' ? 'Dark mode' : 'Light mode'}, {assetType.toUpperCase()}{assetType !== 'svg' ? `, ${sizeChoice === 'Custom' ? customSize : VISUAL_HEIGHT_MAP[sizeChoice]}px height (aspect ratio preserved)` : ' (scalable)'}
+            {colorMode === 'dark' ? 'Dark mode' : 'Light mode'}, {assetType.toUpperCase()}{assetType !== 'svg' ? `, ${getSizePixels(sizeChoice, customSize)}px width (aspect ratio preserved)` : ' (scalable)'}
           </p>
         </div>
 

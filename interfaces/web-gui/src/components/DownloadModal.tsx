@@ -5,6 +5,7 @@ import { Asset } from '@/types/asset';
 import { X, Download, FileImage, FileText, Monitor, Sun, Moon } from 'lucide-react';
 import { convertSvgToRaster, isSvgUrl, getFileExtension } from '@/lib/svgConverter';
 import { manipulateSvgColors, BRAND_COLORS } from '@/lib/svgColorTest';
+import { SIZE_PRESETS, DEFAULT_SIZE, getSizePixels, CUSTOM_SIZE_CONSTRAINTS, validateCustomSize } from '@/lib/sizeConstants';
 
 interface DownloadModalProps {
   asset: Asset;
@@ -13,17 +14,14 @@ interface DownloadModalProps {
 }
 
 type FormatType = 'svg' | 'png' | 'jpeg';
-type SizePreset = 'S' | 'M' | 'L' | 'custom';
+type SizePreset = 'S' | 'M' | 'L' | 'custom width';
 type LogoVariant = 'horizontal' | 'vertical' | 'symbol';
 type BackgroundMode = 'light' | 'dark';
 type ColorMode = '1-color' | '2-color';
 type BrandColor = 'black' | 'white' | 'brand-green' | 'dark-green';
 
-const SIZE_PRESETS = {
-  S: 256,
-  M: 512, 
-  L: 1024
-};
+// Size presets now imported from centralized constants
+// S: 512px, M: 1024px, L: 2048px width-based sizing
 
 const LOGO_VARIANTS = {
   horizontal: { label: 'Horizontal', desc: 'Wide layout' },
@@ -53,8 +51,8 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
   const [colorMode, setColorMode] = useState<ColorMode>('1-color');
   const [selectedColor, setSelectedColor] = useState<BrandColor>('black');
   const [selectedFormat, setSelectedFormat] = useState<FormatType>(isOriginalSvg ? 'svg' : 'png');
-  const [selectedSize, setSelectedSize] = useState<SizePreset>('M');
-  const [customSize, setCustomSize] = useState<string>('512');
+  const [selectedSize, setSelectedSize] = useState<SizePreset>(DEFAULT_SIZE);
+  const [customSize, setCustomSize] = useState<string>(CUSTOM_SIZE_CONSTRAINTS.default.toString());
   const [isDownloading, setIsDownloading] = useState(false);
   
   // Preview state with caching
@@ -125,10 +123,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
   };
 
   const getSizeInPixels = () => {
-    if (selectedSize === 'custom') {
-      return parseInt(customSize) || 512;
-    }
-    return SIZE_PRESETS[selectedSize];
+    return getSizePixels(selectedSize === 'custom width' ? 'Custom Width' : selectedSize, customSize);
   };
 
   const generateFileName = () => {
@@ -523,7 +518,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
               Size
             </label>
             <div className="grid grid-cols-4 gap-2 mb-2">
-              {(Object.keys(SIZE_PRESETS) as SizePreset[]).map((size) => (
+              {(['S', 'M', 'L', 'custom width'] as SizePreset[]).map((size) => (
                 <button
                   key={size}
                   onClick={() => setSelectedSize(size)}
@@ -557,7 +552,7 @@ export default function DownloadModal({ asset, isOpen, onClose }: DownloadModalP
               </button>
             </div>
             
-            {selectedSize === 'custom' && (
+            {selectedSize === 'custom width' && (
               <div className="flex items-center gap-2 mt-1">
                 <input
                   type="number"

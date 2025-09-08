@@ -3,6 +3,8 @@
  * YOU define what users get with "Quick Download" - no AI, no complexity
  */
 
+import { DEFAULT_SIZE_PIXELS } from './sizeConstants';
+
 export interface ProductDefaults {
   variant: 'horizontal' | 'vertical' | 'symbol';
   format: 'svg' | 'png' | 'jpeg';
@@ -70,7 +72,7 @@ export const PRODUCT_DEFAULTS: Record<string, ProductDefaults> = {
   ciq: {
     variant: 'horizontal', // Not used for CIQ, but required by interface
     format: 'png',
-    size: 512,
+    size: DEFAULT_SIZE_PIXELS,
     colorMode: 'light', // Maps to light-mode for CIQ
     reason: 'Standard business logo for general use'
   },
@@ -79,7 +81,7 @@ export const PRODUCT_DEFAULTS: Record<string, ProductDefaults> = {
   fuzzball: {
     variant: 'horizontal',      // Most versatile for presentations, headers
     format: 'png',              // Universal compatibility
-    size: 512,                  // Good balance of quality vs file size
+    size: DEFAULT_SIZE_PIXELS,                  // Good balance of quality vs file size
     colorMode: 'dark',          // Works on most light backgrounds
     reason: 'Optimized for presentations and general business use'
   },
@@ -87,7 +89,7 @@ export const PRODUCT_DEFAULTS: Record<string, ProductDefaults> = {
   ascender: {
     variant: 'horizontal',      // Professional layout for business contexts
     format: 'png',              // Broad compatibility
-    size: 512,                  // Standard resolution
+    size: DEFAULT_SIZE_PIXELS,                  // Standard resolution
     colorMode: 'dark',          // Professional appearance
     reason: 'Professional standard for technical documentation'
   },
@@ -95,7 +97,7 @@ export const PRODUCT_DEFAULTS: Record<string, ProductDefaults> = {
   warewulf: {
     variant: 'horizontal',      // Consistent with other products
     format: 'png',              // Safe choice for compatibility  
-    size: 512,                  // Balanced size
+    size: DEFAULT_SIZE_PIXELS,                  // Balanced size
     colorMode: 'dark',          // Clear on light backgrounds
     reason: 'Versatile for technical presentations and documentation'
   },
@@ -103,7 +105,7 @@ export const PRODUCT_DEFAULTS: Record<string, ProductDefaults> = {
   'rlc-hardened': {
     variant: 'horizontal',      // Consistent with other products
     format: 'png',              // Safe choice for compatibility  
-    size: 512,                  // Balanced size
+    size: DEFAULT_SIZE_PIXELS,                  // Balanced size
     colorMode: 'dark',          // Clear on light backgrounds
     reason: 'Enterprise-grade for security-focused presentations'
   },
@@ -112,11 +114,14 @@ export const PRODUCT_DEFAULTS: Record<string, ProductDefaults> = {
   default: {
     variant: 'horizontal',      // Safest choice for most contexts
     format: 'png',              // Most compatible format
-    size: 512,                  // Reasonable balance
+    size: DEFAULT_SIZE_PIXELS,                  // Reasonable balance
     colorMode: 'dark',          // Works on most backgrounds
     reason: 'General-purpose configuration for business use'
   }
 };
+
+// Note: All sizes now use centralized DEFAULT_SIZE_PIXELS (1024px) from sizeConstants
+// This ensures consistency with the new S-512px, M-1024px, L-2048px sizing system
 
 /**
  * Get product defaults with fallback
