@@ -48,8 +48,7 @@ export default function SearchBar({ onSearch, isLoading = false }: SearchBarProp
             style={{
               border: `1px solid var(--quantic-border-primary)`,
               backgroundColor: 'var(--quantic-color-gray-dark-mode-800)',
-              color: 'var(--quantic-text-primary)',
-              focusRingColor: 'var(--quantic-color-brand-500)'
+              color: 'var(--quantic-text-primary)'
             }}
             disabled={isLoading}
           />
@@ -80,8 +79,7 @@ export default function SearchBar({ onSearch, isLoading = false }: SearchBarProp
             className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               backgroundColor: 'var(--quantic-bg-brand-primary)',
-              color: 'var(--quantic-text-primary-on-brand)',
-              ':hover': { backgroundColor: 'var(--quantic-bg-brand-primary-hover)' }
+              color: 'var(--quantic-text-primary-on-brand)'
             }}
             onMouseEnter={(e) => {
               if (!isLoading) e.currentTarget.style.backgroundColor = 'var(--quantic-bg-brand-primary-hover)';

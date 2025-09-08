@@ -1,6 +1,7 @@
 import { Asset } from '@/types/asset';
 import { spawn } from 'child_process';
 import path from 'path';
+import { demoSearchAssets } from './demoSearchService';
 
 // Path to unified CLI search
 const CLI_WRAPPER_PATH = path.resolve(process.cwd(), '../mcp-server/cli_wrapper.py');
@@ -123,6 +124,20 @@ function transformCLIResult(cliResult: any, showAllVariants: boolean = false): A
 }
 
 export async function searchAssets(query: string, filters?: SimpleSearchFilters): Promise<SimpleSearchResponse> {
+  // Check if we're in demo mode
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || process.env.DEMO_MODE === 'true';
+  
+  if (isDemoMode) {
+    console.log(`🎭 Using demo mode search for: "${query}"`);
+    const demoResult = await demoSearchAssets(query || '');
+    return {
+      assets: demoResult.assets,
+      total: demoResult.total,
+      confidence: demoResult.confidence,
+      recommendation: demoResult.recommendation
+    };
+  }
+  
   try {
     console.log(`🔄 Calling unified CLI search for: "${query}"`);
     
@@ -142,7 +157,7 @@ export async function searchAssets(query: string, filters?: SimpleSearchFilters)
         assets = assets.filter(asset => asset.assetType === filters.assetType);
       }
       if (filters.brand) {
-        assets = assets.filter(asset => asset.brand?.toLowerCase() === filters.brand.toLowerCase());
+        assets = assets.filter(asset => asset.brand?.toLowerCase() === filters.brand?.toLowerCase());
       }
       if (filters.background) {
         assets = assets.filter(asset => asset.metadata?.backgroundMode === filters.background);

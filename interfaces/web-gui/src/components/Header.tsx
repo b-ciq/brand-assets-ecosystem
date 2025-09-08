@@ -45,7 +45,7 @@ function Select({ label = true, hintText = true, supportingText = true, scrollBa
                   <div className="absolute inset-0 overflow-clip" data-name="help-circle" id="node-I1_7876-1054_3">
                     <div className="absolute inset-[8.333%]" data-name="Icon" id="node-I1_7876-1054_3-3463_405412">
                       <div className="absolute inset-[-5%]" style={{ "--stroke-0": "rgba(164, 167, 174, 1)" } as React.CSSProperties}>
-                        <img alt className="block max-w-none size-full" src={img} />
+                        <img alt="" className="block max-w-none size-full" src={img} />
                       </div>
                     </div>
                   </div>
@@ -59,7 +59,7 @@ function Select({ label = true, hintText = true, supportingText = true, scrollBa
                 <div className="overflow-clip relative shrink-0 size-5" data-name="search-lg" data-node-id="1:7879">
                   <div className="absolute inset-[12.5%]" data-name="Icon" id="node-I1_7879-3463_405301">
                     <div className="absolute inset-[-5.56%]" style={{ "--stroke-0": "rgba(164, 167, 174, 1)" } as React.CSSProperties}>
-                      <img alt className="block max-w-none size-full" src={img1} />
+                      <img alt="" className="block max-w-none size-full" src={img1} />
                     </div>
                   </div>
                 </div>

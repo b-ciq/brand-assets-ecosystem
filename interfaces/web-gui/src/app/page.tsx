@@ -5,6 +5,7 @@ import { Asset, SearchFilters, SearchResponse } from '@/types/asset';
 import Header from '@/components/Header';
 import AssetGrid from '@/components/AssetGrid';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { demoSearchAssets } from '@/lib/demoSearchService';
 
 export default function Home() {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -25,16 +26,34 @@ export default function Home() {
     }
 
     try {
-      const params = new URLSearchParams();
-      if (filters.query) params.set('query', filters.query);
-      if (filters.fileType) params.set('fileType', filters.fileType);
-      if (filters.assetType) params.set('assetType', filters.assetType);
-      params.set('page', page.toString());
+      // Check if we're in demo mode (static export)
+      const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+      
+      let data: SearchResponse;
+      
+      if (isDemoMode) {
+        // Use client-side search for demo mode
+        console.log('🎭 Using demo mode client-side search');
+        const demoResult = await demoSearchAssets(filters.query || '');
+        data = {
+          assets: demoResult.assets,
+          totalCount: demoResult.total,
+          currentPage: page,
+          totalPages: 1, // Demo mode returns all results on one page
+          hasNextPage: false
+        };
+      } else {
+        // Use API route for local development
+        const params = new URLSearchParams();
+        if (filters.query) params.set('query', filters.query);
+        if (filters.fileType) params.set('fileType', filters.fileType);
+        if (filters.assetType) params.set('assetType', filters.assetType);
+        params.set('page', page.toString());
 
-      const response = await fetch(`/api/search?${params.toString()}`);
-      if (!response.ok) throw new Error('Search failed');
-
-      const data: SearchResponse = await response.json();
+        const response = await fetch(`/api/search?${params.toString()}`);
+        if (!response.ok) throw new Error('Search failed');
+        data = await response.json();
+      }
       console.log('Search response:', data);
       console.log('Assets count:', data.assets?.length);
       console.log('Asset brands:', data.assets?.map(a => `${a.brand} (${a.id})`));

@@ -15,7 +15,7 @@ export function useInfiniteScroll({
   isLoading, 
   threshold = 200 
 }: UseInfiniteScrollOptions) {
-  const loadMoreRef = useRef<() => void>();
+  const loadMoreRef = useRef<() => void>(() => {});
   
   // Update the ref to always have the latest onLoadMore function
   loadMoreRef.current = onLoadMore;
