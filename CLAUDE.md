@@ -343,6 +343,44 @@ curl "http://localhost:3000/api/search?query=fuzzball" | jq '.total'  # Returns:
 
 **🎉 The unified architecture now ensures perfect consistency across all interfaces with centralized business logic!**
 
+## ⚠️ **DEMO MODE VS UNIFIED BACKEND INCONSISTENCY** (Sept 2025)
+
+### **Critical Issue**: Deployment Uses Demo Mode, Not Unified Backend
+
+**Problem Discovered**: While local development uses the unified CLI backend, deployed versions may run in "demo mode" using client-side data files, causing inconsistent results between environments.
+
+#### **How It Works**:
+- **Local Development**: Uses `callUnifiedCLI()` → calls `cli_wrapper.py` → unified search logic
+- **Deployed Version**: May use demo mode → calls `demoSearchAssets()` → reads client-side JSON files
+
+#### **Demo Mode Trigger** (see `brandAssetsService.ts:127-139`):
+```typescript
+const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || process.env.DEMO_MODE === 'true';
+if (isDemoMode) {
+  const demoResult = await demoSearchAssets(query || '');
+  // Uses client-side data, NOT unified CLI backend
+}
+```
+
+#### **Impact on Asset Management**:
+When adding new assets, you must update BOTH:
+1. **MCP Server Metadata** (`interfaces/mcp-server/metadata/`) - for unified CLI backend
+2. **Web-GUI Data Files** (`interfaces/web-gui/src/data/`) - for demo mode
+
+#### **Example Issue - CIQ Logo**:
+- **Local**: CIQ hardcoded in `cli_wrapper.py` → works
+- **Deployed**: CIQ missing from demo data files → broken
+- **Solution**: Added CIQ to both metadata locations
+
+#### **Asset Addition Checklist**:
+✅ Add SVG files to `/public/assets/products/[product]/logos/`
+✅ Update `interfaces/mcp-server/metadata/asset-inventory.json` 
+✅ Update `interfaces/mcp-server/metadata/search-patterns.json`
+✅ Update `interfaces/web-gui/src/data/asset-inventory.json` ← **CRITICAL FOR DEMO MODE**
+✅ Update `interfaces/web-gui/src/data/search-patterns.json` ← **CRITICAL FOR DEMO MODE**
+
+**⚠️ Missing the web-GUI data updates will cause deployment failures!**
+
 ## ⚠️ **MCP SERVER REWRITE REQUIRED** (Sept 2025)
 
 ### **Current MCP Server Issues Identified**:
