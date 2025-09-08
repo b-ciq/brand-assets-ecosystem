@@ -43,7 +43,7 @@ function transformAssetData(cliStyleResult: any): Asset[] {
         displayName: `${product.toUpperCase()} Logo`,
         description: `${product} ${asset.type} - ${asset.layout}`,
         url: `https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main${asset.url}`,
-        thumbnailUrl: `https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main${asset.url}`,
+        thumbnailUrl: asset.url, // Use relative path for static export
         fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
         dimensions: { width: 100, height: 100 },
         tags: asset.tags || [],
@@ -79,6 +79,13 @@ export async function demoSearchAssets(query: string): Promise<DemoSearchRespons
       results[resolvedProduct] = (assetInventory.assets as any)[resolvedProduct];
       totalFound = Object.keys((assetInventory.assets as any)[resolvedProduct]).length;
     }
+  } else if (queryLower === '' || ['all', 'logo', 'logos'].includes(queryLower)) {
+    // Empty query - show all primary assets (like CLI backend)
+    console.log(`🔍 Demo: Empty/general search - showing all primary assets`);
+    results = { ...assetInventory.assets };
+    totalFound = Object.values(assetInventory.assets).reduce((sum, productAssets) => 
+      sum + Object.keys(productAssets as any).length, 0
+    );
   } else {
     // General search - fallback to keyword matching
     console.log(`🔍 Demo: General search for '${query}'`);
@@ -105,23 +112,7 @@ export async function demoSearchAssets(query: string): Promise<DemoSearchRespons
     }
   }
   
-  // Add CIQ company logos for general searches
-  if (!resolvedProduct && ['logo', 'brand', 'company', 'all', ''].includes(queryLower)) {
-    const ciqLogos = {
-      "horizontal_black": {
-        "url": "/assets/global/CIQ_logos/CIQ_logo_1clr_lightmode.svg",
-        "filename": "CIQ_logo_1clr_lightmode.svg",
-        "background": "light",
-        "color": "black",
-        "layout": "horizontal",
-        "type": "logo",
-        "size": "large",
-        "tags": ["company", "primary", "general-use"]
-      }
-    };
-    results['ciq'] = ciqLogos;
-    totalFound += 1;
-  }
+  // No need to manually add CIQ - it's already in assetInventory.assets
   
   // Filter to primary variants only (horizontal layout preferred)
   const filteredResults: any = {};
