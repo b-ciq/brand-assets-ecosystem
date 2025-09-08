@@ -357,8 +357,8 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
                   
                   // Calculate proper dimensions preserving aspect ratio
                   const aspectRatio = img.naturalWidth / img.naturalHeight;
-                  canvas.height = scaling.height;
-                  canvas.width = scaling.width || Math.round(scaling.height * aspectRatio);
+                  canvas.width = scaling.width;
+                  canvas.height = scaling.height || Math.round(scaling.width / aspectRatio);
                   
                   // Apply theme-appropriate background for JPEG
                   if (assetType === 'jpg') {
