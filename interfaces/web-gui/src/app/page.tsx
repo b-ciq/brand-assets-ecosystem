@@ -37,10 +37,9 @@ export default function Home() {
         const demoResult = await demoSearchAssets(filters.query || '');
         data = {
           assets: demoResult.assets,
-          totalCount: demoResult.total,
-          currentPage: page,
-          totalPages: 1, // Demo mode returns all results on one page
-          hasNextPage: false
+          total: demoResult.total,
+          page: page,
+          hasMore: false
         };
       } else {
         // Use API route for local development
