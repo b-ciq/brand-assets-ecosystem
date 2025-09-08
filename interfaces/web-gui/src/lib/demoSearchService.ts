@@ -42,7 +42,7 @@ function transformAssetData(cliStyleResult: any): Asset[] {
         title: asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset",
         displayName: `${product.toUpperCase()} Logo`,
         description: `${product} ${asset.type} - ${asset.layout}`,
-        url: `https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main${asset.url}`,
+        url: `https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main/interfaces/web-gui/public${asset.url}`,
         thumbnailUrl: asset.url, // Use relative path for static export
         fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
         dimensions: { width: 100, height: 100 },
