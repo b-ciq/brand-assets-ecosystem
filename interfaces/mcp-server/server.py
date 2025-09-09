@@ -37,8 +37,8 @@ def find_logo(product_name: str) -> str:
     """
     Find a product logo and return a direct link to the web interface.
     
-    Available products: fuzzball, warewulf, ascender, rlc-hardened, ciq
-    Also accepts: fuzz, war, asc, roc (will be resolved to full product names)
+    Available products: apptainer, fuzzball, warewulf, ascender, rlc-hardened, rlc-ai, ciq
+    Also accepts: app, fuzz, war, asc, roc, ai (will be resolved to full product names)
     
     Returns a simple message with a direct web interface link for logo download.
     """
@@ -47,13 +47,13 @@ def find_logo(product_name: str) -> str:
     result = call_unified_cli(product_name)
     
     if "error" in result:
-        return f"Sorry, I couldn't find any logos for '{product_name}'. Available products: fuzzball, warewulf, ascender, rlc-hardened, ciq"
+        return f"Sorry, I couldn't find any logos for '{product_name}'. Available products: apptainer, fuzzball, warewulf, ascender, rlc-hardened, rlc-ai, ciq"
     
     if result.get("total_found", 0) == 0:
-        return f"No logos found for '{product_name}'. Available products: fuzzball, warewulf, ascender, rlc-hardened, ciq"
+        return f"No logos found for '{product_name}'. Available products: apptainer, fuzzball, warewulf, ascender, rlc-hardened, rlc-ai, ciq"
     
-    # Generate web GUI URL
-    base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3000')
+    # Generate web GUI URL - use public deployment by default
+    base_url = os.getenv('WEB_GUI_URL', 'https://lighthearted-fenglisu-f8b66c.netlify.app')
     web_url = f"{base_url}?query={product_name.replace(' ', '+')}"
     
     # Extract first product name for response
