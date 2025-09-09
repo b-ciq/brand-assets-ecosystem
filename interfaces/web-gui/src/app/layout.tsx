@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import "../styles/quantic-tokens.css";
 import "../styles/quantic-dark-tokens.css";
-import DemoBanner from "../components/DemoBanner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -29,7 +28,6 @@ export default function RootLayout({
         className={`${inter.variable} antialiased`}
         style={{ fontFamily: 'var(--quantic-font-family-body)' }}
       >
-        <DemoBanner />
         {children}
       </body>
     </html>
