@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CIQ Logo Variant Test - MARK FOR DELETION</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-case { 
+            border: 1px solid #ccc; 
+            margin: 10px; 
+            padding: 15px; 
+            border-radius: 5px;
+        }
+        .variant-urls {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        h1 { color: #333; }
+        h3 { color: #666; }
+        .status { font-weight: bold; }
+        .pass { color: green; }
+        .fail { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🧪 CIQ Logo Variant Test</h1>
+    <p><strong>PURPOSE:</strong> Test CIQ logo variant selection for SVG downloads after bug fix</p>
+    <p><strong>MARK FOR DELETION:</strong> This is a temporary test file created for bug verification</p>
+    
+    <div class="test-case">
+        <h3>Expected CIQ Logo Variant URLs:</h3>
+        <div class="variant-urls">
+            1-color light mode: /assets/global/CIQ_logos/CIQ_logo_1clr_lightmode.svg<br>
+            2-color light mode: /assets/global/CIQ_logos/CIQ_logo_2clr_lightmode.svg<br>
+            1-color dark mode: /assets/global/CIQ_logos/CIQ_logo_1clr_darkmode.svg<br>
+            2-color dark mode: /assets/global/CIQ_logos/CIQ_logo_2clr_darkmode.svg
+        </div>
+    </div>
+    
+    <div class="test-case">
+        <h3>Test Procedure:</h3>
+        <ol>
+            <li>Go to web app and search for "ciq"</li>
+            <li>Open CIQ logo in modal</li>
+            <li>Test each combination:
+                <ul>
+                    <li>Light mode + 1-color + SVG download</li>
+                    <li>Light mode + 2-color + SVG download ⚠️ <strong>(This was the bug)</strong></li>
+                    <li>Dark mode + 1-color + SVG download</li>
+                    <li>Dark mode + 2-color + SVG download ⚠️ <strong>(This was the bug)</strong></li>
+                </ul>
+            </li>
+            <li>Check browser dev tools network tab to see which URL was fetched</li>
+            <li>Verify downloaded SVG matches selected variant</li>
+        </ol>
+    </div>
+    
+    <div class="test-case">
+        <h3>🔧 Bug Fix Applied:</h3>
+        <p>Updated SVG download logic in DownloadModalNew.tsx to use variant selection:</p>
+        <div class="variant-urls">
+            // OLD CODE (BUG):
+            const response = await fetch(asset.url); // Always used base asset URL
+            
+            // NEW CODE (FIXED):
+            const selectedVariantData = variants.find(v => v.id === selectedVariant);
+            const sourceUrl = selectedVariantData?.logoPath || asset.url; // Uses variant logoPath
+            const response = await fetch(sourceUrl);
+        </div>
+    </div>
+    
+    <div class="test-case">
+        <h3>Manual Testing Results:</h3>
+        <div id="test-results">
+            <p><em>To be filled in manually during testing...</em></p>
+            <div class="status">
+                ⚪ Light mode + 1-color + SVG: <span id="test1">Not tested</span><br>
+                ⚪ Light mode + 2-color + SVG: <span id="test2">Not tested</span><br>
+                ⚪ Dark mode + 1-color + SVG: <span id="test3">Not tested</span><br>
+                ⚪ Dark mode + 2-color + SVG: <span id="test4">Not tested</span><br>
+                ⚪ Non-CIQ assets still work: <span id="test5">Not tested</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-case">
+        <h3>🗑️ Cleanup Note:</h3>
+        <p><strong>This file should be deleted after testing is complete.</strong></p>
+        <p>Command: <code>rm test_ciq_logo_variants.html</code></p>
+    </div>
+    
+    <script>
+        console.log('🧪 CIQ Logo Variant Test Page Loaded');
+        console.log('Expected variant URLs:');
+        console.log('1-color light:', '/assets/global/CIQ_logos/CIQ_logo_1clr_lightmode.svg');
+        console.log('2-color light:', '/assets/global/CIQ_logos/CIQ_logo_2clr_lightmode.svg');
+        console.log('1-color dark:', '/assets/global/CIQ_logos/CIQ_logo_1clr_darkmode.svg');
+        console.log('2-color dark:', '/assets/global/CIQ_logos/CIQ_logo_2clr_darkmode.svg');
+    </script>
+</body>
+</html>

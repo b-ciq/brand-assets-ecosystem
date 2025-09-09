@@ -258,10 +258,16 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
       let blob: Blob;
       
       if (assetType === 'svg') {
-        // SVG download
-        const response = await fetch(asset.url);
-        let svgContent = await response.text();
+        // SVG download - use correct variant URL like raster downloads
+        const selectedVariantData = variants.find(v => v.id === selectedVariant);
+        const sourceUrl = selectedVariantData?.logoPath || asset.url;
+        console.log('SVG download variant:', selectedVariant, 'from URL:', sourceUrl);
         
+        const response = await fetch(sourceUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch SVG: ${response.status} ${response.statusText}`);
+        }
+        const svgContent = await response.text();
         
         blob = new Blob([svgContent], { type: 'image/svg+xml' });
       } else {
