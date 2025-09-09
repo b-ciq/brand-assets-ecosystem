@@ -158,7 +158,7 @@ export default function Header({ onSearch, isLoading = false, initialQuery = '',
             />
           </div>
           <div className="font-['Inter:Regular',_sans-serif] font-normal leading-[0] not-italic relative shrink-0 text-[#85888e] text-base sm:text-lg text-nowrap hidden sm:block" data-node-id="1:10636">
-            <p className="leading-[28px] whitespace-pre">Brand asset finder</p>
+            <p className="leading-[28px] whitespace-pre">Brand asset finder (Beta)</p>
           </div>
         </div>
         <div className="content-stretch flex gap-2 sm:gap-4 lg:gap-6 items-center justify-start relative shrink-0" data-node-id="1:8979">
