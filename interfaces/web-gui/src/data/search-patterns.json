@@ -1,5 +1,11 @@
 {
   "product_patterns": {
+    "apptainer": [
+      "app",
+      "apptainer",
+      "container",
+      "singularity"
+    ],
     "fuzzball": [
       "fuzz",
       "fuzzy",

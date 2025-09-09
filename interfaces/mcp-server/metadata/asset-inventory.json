@@ -185,6 +185,43 @@
         ]
       }
     },
+    "apptainer": {
+      "horizontal_black": {
+        "url": "/assets/products/apptainer/logos/Apptainer_logo_h-blk.svg",
+        "filename": "Apptainer_logo_h-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "horizontal",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "wide_format"
+        ]
+      },
+      "vertical_black": {
+        "url": "/assets/products/apptainer/logos/Apptainer_logo_v-blk.svg",
+        "filename": "Apptainer_logo_v-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "vertical",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "tall_banner",
+          "stacked"
+        ]
+      },
+      "symbol_black": {
+        "url": "/assets/products/apptainer/logos/Apptainer_logo_symbol-blk.svg",
+        "filename": "Apptainer_logo_symbol-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "symbol",
+        "type": "logo",
+        "size": "large",
+        "tags": []
+      }
+    },
     "ciq": {
       "horizontal_black": {
         "url": "/assets/global/CIQ_logos/CIQ_logo_1clr_lightmode.svg",
@@ -289,6 +326,7 @@
   },
   "index": {
     "products": [
+      "apptainer",
       "ascender",
       "ciq",
       "fuzzball",
@@ -313,7 +351,7 @@
       "tall_banner",
       "wide_format"
     ],
-    "total_assets": 16
+    "total_assets": 19
   },
   "colors": {
     "available": false,
