@@ -42,7 +42,7 @@ class LogoAssetHandler implements AssetDisplayHandler {
 class DocumentAssetHandler implements AssetDisplayHandler {
   getImageConstraints(): ImageConstraints {
     return {
-      maxHeight: '200px',
+      maxHeight: '100%', // Fill available container space (within padding)
       maxWidth: '100%',
       objectFit: 'contain'
     };

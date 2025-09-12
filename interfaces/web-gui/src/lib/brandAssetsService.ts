@@ -80,7 +80,7 @@ function transformCLIResult(cliResult: any, showAllVariants: boolean = false): A
           displayName: asset.document_type === 'brand-guidelines' 
             ? 'Brand Guidelines'
             : `${product.toUpperCase()} ${asset.document_type?.replace('-', ' ')?.replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'Document'}`,
-          description: asset.content_summary || `${product} ${asset.document_type || 'document'}`,
+          description: asset.description || asset.content_summary || `${product} ${asset.document_type || 'document'}`,
           url: asset.url,
           thumbnailUrl: asset.thumbnail_url || asset.url,
           fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'pdf' : 'pdf',

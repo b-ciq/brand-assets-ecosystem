@@ -22,7 +22,39 @@ The Brand Assets Ecosystem is a unified web-based brand asset management system 
 ### **Documents** (PDF Format)  
 - **Solution Briefs**: Product-specific PDF documents with technical information
 - **Brand Guidelines**: General CIQ branding and logo usage guidelines
-- **Auto-Processing**: Thumbnail generation, content extraction, search indexing
+- **Auto-Processing**: Comprehensive content analysis and optimization pipeline
+
+#### **PDF Processing Pipeline** (Complete Implementation)
+
+**1. Content Extraction & Analysis**:
+- **Text Extraction**: Full text content extraction from PDF using pypdf
+- **Content Summary**: Intelligent summary generation from first 3 pages
+- **Smart Description**: User-friendly descriptions (not raw extracted text)
+- **Searchable Keywords**: Relevant search terms extracted from document content
+
+**2. Document Classification**:
+- **Auto-detect Document Type**: solution-brief, brand-guidelines, datasheet, whitepaper, etc.
+- **Product Association**: Automatic linking to specific products or marking as general
+- **Metadata Extraction**: Pages count, file size, creation analysis
+
+**3. Search Optimization**:
+- **Keyword Extraction**: Pull relevant terms from actual document content
+- **Search Patterns**: Auto-update `search-patterns.json` if new product terms found
+- **Content Indexing**: Full-text search capability through unified backend
+
+**4. Visual Processing**:
+- **Thumbnail Generation**: Tight content-aware cropping with zero padding
+- **Aspect Normalization**: Standardized 8.5:11 ratio (0.773) for consistent display
+- **Responsive Display**: Smart scaling from mobile (2-col) to desktop (6-col) layouts
+
+**5. Processing Command**:
+```bash
+# Auto-discover and process new PDFs
+python3 interfaces/mcp-server/pdf_processor.py path/to/document.pdf
+
+# Batch process all PDFs in directory
+find interfaces/web-gui/public/assets -name "*.pdf" -exec python3 interfaces/mcp-server/pdf_processor.py {} \;
+```
 - **Simple Modal**: Preview thumbnail + direct download (no configuration needed)
 
 ## use cases

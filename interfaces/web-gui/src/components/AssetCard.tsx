@@ -147,12 +147,12 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
       }}
     >
       {/* Image container - 3x3 area */}
-      <div className="relative h-full overflow-hidden p-8 flex items-center justify-center group/image rounded-lg" style={{ backgroundColor: getImageBackground() }}>
+      <div className="relative h-full overflow-hidden p-4 flex items-center justify-center group/image rounded-lg" style={{ backgroundColor: getImageBackground() }}>
         
         {!imageError && shouldLoadImage ? (
           <>
             {!imageLoaded && (
-              <div className="absolute inset-8 flex items-center justify-center">
+              <div className="absolute inset-4 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: 'var(--quantic-color-brand-600)' }}></div>
               </div>
             )}
@@ -161,18 +161,24 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
               alt={asset.title}
               className={`max-w-full transition-opacity duration-200 ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
+              } ${
+                asset.assetType === 'document' ? 'shadow-md' : ''
               }`}
               style={{
                 maxHeight: imageConstraints.maxHeight,
                 maxWidth: imageConstraints.maxWidth,
-                objectFit: imageConstraints.objectFit
+                objectFit: imageConstraints.objectFit,
+                ...(asset.assetType === 'document' && {
+                  filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15))',
+                  borderRadius: '4px'
+                })
               }}
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
             />
           </>
         ) : !shouldLoadImage ? (
-          <div className="absolute inset-8 flex items-center justify-center">
+          <div className="absolute inset-4 flex items-center justify-center">
             <div className="text-center" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
               <FileText size={32} className="mx-auto mb-2" />
               <div className="text-sm">{asset.fileType.toUpperCase()}</div>
@@ -226,18 +232,21 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
               )}
             </button>
             
-            <button
-              onClick={handleCustomizeDownload}
-              className="flex items-center justify-center w-10 h-10 rounded-md transition-all duration-200 border"
-              style={{
-                backgroundColor: 'var(--quantic-color-gray-dark-mode-700)',
-                borderColor: 'var(--quantic-color-gray-dark-mode-600)',
-                color: 'var(--quantic-color-gray-dark-mode-300)'
-              }}
-              title="Customize"
-            >
-              <Settings size={16} />
-            </button>
+            {/* Only show customize button for logos, not documents */}
+            {asset.assetType !== 'document' && (
+              <button
+                onClick={handleCustomizeDownload}
+                className="flex items-center justify-center aspect-square h-full rounded-md transition-all duration-200 border px-2"
+                style={{
+                  backgroundColor: 'var(--quantic-color-gray-dark-mode-700)',
+                  borderColor: 'var(--quantic-color-gray-dark-mode-600)',
+                  color: 'var(--quantic-color-gray-dark-mode-300)'
+                }}
+                title="Customize"
+              >
+                <Settings size={16} />
+              </button>
+            )}
           </div>
         </div>
       </div>

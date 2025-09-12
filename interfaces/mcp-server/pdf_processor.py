@@ -15,6 +15,7 @@ try:
     from pypdf import PdfReader
     from PIL import Image
     from pdf2image import convert_from_path
+    import numpy as np
     PDF_LIBS_AVAILABLE = True
 except ImportError as e:
     print(f"Warning: PDF processing libraries not available: {e}")
@@ -79,6 +80,96 @@ def extract_pdf_text(pdf_path: str) -> tuple[str, int]:
         print(f"Error extracting PDF text: {e}")
         return f"Error extracting text: {str(e)}", 1
 
+def crop_to_content_tight(image: Image.Image, threshold: int = 240) -> Image.Image:
+    """
+    Crop image to exact content boundaries with zero padding.
+    
+    Args:
+        image: PIL Image object to crop
+        threshold: RGB threshold for considering a pixel "white" (240 = off-white tolerance)
+    
+    Returns:
+        Tightly cropped PIL Image
+    """
+    if not PDF_LIBS_AVAILABLE:
+        return image
+    
+    try:
+        # Convert PIL image to numpy array for pixel analysis
+        img_array = np.array(image)
+        
+        # Handle both RGB and RGBA images
+        if len(img_array.shape) == 3 and img_array.shape[2] >= 3:
+            # For color images, check if all RGB channels are above threshold
+            non_white_mask = np.any(img_array[:, :, :3] < threshold, axis=2)
+        else:
+            # For grayscale, convert to 2D array
+            if len(img_array.shape) == 3:
+                img_array = np.mean(img_array, axis=2)
+            non_white_mask = img_array < threshold
+        
+        # Find bounding box of non-white content
+        rows = np.any(non_white_mask, axis=1)
+        cols = np.any(non_white_mask, axis=0)
+        
+        # Get first and last True indices
+        if np.any(rows) and np.any(cols):
+            top, bottom = np.where(rows)[0][[0, -1]]
+            left, right = np.where(cols)[0][[0, -1]]
+            
+            # Crop to exact content boundaries (zero padding)
+            cropped = image.crop((left, top, right + 1, bottom + 1))
+            print(f"Cropped from {image.size} to {cropped.size} (removed {image.size[0] - cropped.size[0]}x{image.size[1] - cropped.size[1]} pixels)")
+            return cropped
+        else:
+            print("No content found, returning original image")
+            return image
+            
+    except Exception as e:
+        print(f"Error in tight cropping, using original: {e}")
+        return image
+
+def normalize_aspect_ratio(image: Image.Image, target_ratio: float = 0.773) -> Image.Image:
+    """
+    Normalize image to standard document aspect ratio (8.5:11 = 0.773).
+    
+    Args:
+        image: PIL Image to normalize
+        target_ratio: Target width/height ratio (0.773 for 8.5:11)
+    
+    Returns:
+        Image with normalized aspect ratio
+    """
+    if not PDF_LIBS_AVAILABLE:
+        return image
+    
+    try:
+        current_ratio = image.size[0] / image.size[1]
+        
+        if abs(current_ratio - target_ratio) < 0.01:  # Already close enough
+            return image
+        
+        width, height = image.size
+        
+        if current_ratio > target_ratio:
+            # Image is too wide, crop sides
+            new_width = int(height * target_ratio)
+            left = (width - new_width) // 2
+            cropped = image.crop((left, 0, left + new_width, height))
+            print(f"Aspect normalization: cropped width from {width} to {new_width} (removed {width - new_width}px)")
+        else:
+            # Image is too tall, crop top/bottom
+            new_height = int(width / target_ratio)
+            top = (height - new_height) // 2
+            cropped = image.crop((0, top, width, top + new_height))
+            print(f"Aspect normalization: cropped height from {height} to {new_height} (removed {height - new_height}px)")
+        
+        return cropped
+        
+    except Exception as e:
+        print(f"Error in aspect normalization, using original: {e}")
+        return image
+
 def generate_thumbnail(pdf_path: str, thumbnail_path: str, size: tuple = (300, 400)) -> bool:
     """Generate thumbnail image from first page of PDF"""
     if not PDF_LIBS_AVAILABLE:
@@ -100,23 +191,25 @@ def generate_thumbnail(pdf_path: str, thumbnail_path: str, size: tuple = (300, 4
             return False
     
     try:
-        # Convert first page to image
-        images = convert_from_path(pdf_path, first_page=1, last_page=1, dpi=150)
+        # Convert first page to high-resolution image for better crop detection
+        images = convert_from_path(pdf_path, first_page=1, last_page=1, dpi=200)
         
         if images:
-            # Resize and save thumbnail
-            thumbnail = images[0]
-            thumbnail.thumbnail(size, Image.Resampling.LANCZOS)
+            # Get the first page image
+            page_image = images[0]
             
-            # Create white background and center the thumbnail
-            final_img = Image.new('RGB', size, 'white')
-            thumb_w, thumb_h = thumbnail.size
-            x = (size[0] - thumb_w) // 2
-            y = (size[1] - thumb_h) // 2
-            final_img.paste(thumbnail, (x, y))
+            # Apply tight content cropping with zero padding
+            cropped_image = crop_to_content_tight(page_image)
             
-            final_img.save(thumbnail_path)
-            print(f"Generated thumbnail: {thumbnail_path}")
+            # Normalize to standard document aspect ratio (8.5:11)
+            normalized_image = normalize_aspect_ratio(cropped_image, target_ratio=0.773)
+            
+            # Scale down to target size while preserving aspect ratio
+            normalized_image.thumbnail(size, Image.Resampling.LANCZOS)
+            
+            # Save the normalized thumbnail
+            normalized_image.save(thumbnail_path)
+            print(f"Generated normalized thumbnail: {thumbnail_path}")
             return True
         else:
             print("No images generated from PDF")

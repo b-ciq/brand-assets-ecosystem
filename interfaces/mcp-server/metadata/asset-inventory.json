@@ -35,6 +35,51 @@
         "type": "logo",
         "size": "large",
         "tags": []
+      },
+      "ascender_solution_brief_pdf": {
+        "url": "/assets/products/ascender/documents/AscenderPro_SolutionBrief_V1.4.pdf",
+        "filename": "AscenderPro_SolutionBrief_V1.4.pdf",
+        "thumbnail_url": "/assets/products/ascender/documents/thumbnails/AscenderPro_SolutionBrief_V1.4.png",
+        "type": "document",
+        "document_type": "solution-brief",
+        "file_size": "202.3 KB",
+        "pages": 3,
+        "description": "Ascender solution brief detailing workflow automation, configuration management, and infrastructure orchestration capabilities.",
+        "content_summary": "Ascender helps teams define, automate, and manage workflows and configurations across their infrastructure. It extends Ansible's capabilities by centralizing automation efforts and offering an interface that automates tasks such as server provisioning and configuration management.",
+        "searchable_content": [
+          "solution brief",
+          "ascender",
+          "ascender solution brief",
+          "solution",
+          "cloud",
+          "security",
+          "scalability",
+          "management",
+          "automation",
+          "platform",
+          "open source",
+          "helps",
+          "teams",
+          "manage",
+          "workflows",
+          "configurations",
+          "across",
+          "their",
+          "extends",
+          "capabilities",
+          "centralizing",
+          "efforts",
+          "offering",
+          "interface",
+          "automates",
+          "tasks",
+          "such",
+          "server"
+        ],
+        "tags": [
+          "solution_brief",
+          "ascender"
+        ]
       }
     },
     "rlc-hardened": {
@@ -71,6 +116,50 @@
         "size": "large",
         "tags": [
           "wide_format"
+        ]
+      },
+      "rlc-hardened_solution_brief_pdf": {
+        "url": "/assets/products/rlc-hardened/documents/RLC-H_SolutionBrief_v2.4.pdf",
+        "filename": "RLC-H_SolutionBrief_v2.4.pdf",
+        "thumbnail_url": "/assets/products/rlc-hardened/documents/thumbnails/RLC-H_SolutionBrief_v2.4.png",
+        "type": "document",
+        "document_type": "solution-brief",
+        "file_size": "130.1 KB",
+        "pages": 3,
+        "description": "RLC-Hardened solution brief covering enterprise security hardening, compliance policies, and threat protection for Linux systems.",
+        "content_summary": "As the speed, sophistication, and volume of attacks on corporate systems accelerate, CISOs and IT security teams need to stay ahead by applying effective and consistent hardening and security policies across their infrastructure.",
+        "searchable_content": [
+          "solution brief",
+          "rlc-hardened",
+          "rlc-hardened solution brief",
+          "solution",
+          "enterprise",
+          "security",
+          "performance",
+          "platform",
+          "linux",
+          "open source",
+          "volume",
+          "attacks",
+          "corporate",
+          "systems",
+          "cisos",
+          "teams",
+          "need",
+          "stay",
+          "ahead",
+          "applying",
+          "effective",
+          "consistent",
+          "hardening",
+          "policies",
+          "across",
+          "their",
+          "solves"
+        ],
+        "tags": [
+          "solution_brief",
+          "rlc-hardened"
         ]
       }
     },
@@ -145,6 +234,49 @@
         "size": "large",
         "tags": [
           "wide_format"
+        ]
+      },
+      "warewulf_solution_brief_pdf": {
+        "url": "/assets/products/warewulf/documents/Warewulf_SolutionBrief_V2.7.pdf",
+        "filename": "Warewulf_SolutionBrief_V2.7.pdf",
+        "thumbnail_url": "/assets/products/warewulf/documents/thumbnails/Warewulf_SolutionBrief_V2.7.png",
+        "type": "document",
+        "document_type": "solution-brief",
+        "file_size": "806.0 KB",
+        "pages": 4,
+        "description": "Warewulf solution brief covering HPC cluster management, container orchestration, and high-performance computing infrastructure solutions.",
+        "content_summary": "Web interface - An intuitive interface for configuration and management of an HPC cluster. Prebuilt node images - Curated base images for common HPC use cases, including OpenHPC, Slurm, OpenPBS, and custom overlays that can be configured to accelerate deployment.",
+        "searchable_content": [
+          "solution brief",
+          "warewulf",
+          "warewulf solution brief",
+          "solution",
+          "enterprise",
+          "performance",
+          "management",
+          "platform",
+          "container",
+          "kubernetes",
+          "open source",
+          "interface",
+          "intuitive",
+          "configuration",
+          "prebuilt",
+          "node",
+          "images",
+          "curated",
+          "base",
+          "common",
+          "including",
+          "custom",
+          "overlays",
+          "that",
+          "configured",
+          "accelerate"
+        ],
+        "tags": [
+          "solution_brief",
+          "warewulf"
         ]
       }
     },
@@ -266,6 +398,7 @@
         "document_type": "solution-brief",
         "file_size": "69.6 KB",
         "pages": 3,
+        "description": "Bridge solution brief detailing enterprise Linux migration, security enhancements, and performance optimization capabilities.",
         "content_summary": "Love the stability of CentOS, but unsure what to do post EOL?\nCentOS 7 is a stable and loved Linux distribution; however, vulnerabilities are no longer being patched by the \ncommunity and updates are...",
         "searchable_content": [
           "solution brief",
@@ -320,6 +453,52 @@
         "type": "logo",
         "size": "large",
         "tags": []
+      },
+      "rocky-linux-from-ciq_solution_brief_pdf": {
+        "url": "/assets/products/rocky-linux-from-ciq/documents/RLC+Nvidia_SolutionBrief_v1.1.pdf",
+        "filename": "RLC+Nvidia_SolutionBrief_v1.1.pdf",
+        "thumbnail_url": "/assets/products/rocky-linux-from-ciq/documents/thumbnails/RLC+Nvidia_SolutionBrief_v1.1.png",
+        "type": "document",
+        "document_type": "solution-brief",
+        "file_size": "588.1 KB",
+        "pages": 5,
+        "description": "Rocky Linux from CIQ solution brief featuring NVIDIA integration, enterprise Linux distribution capabilities, and cloud-native deployment options.",
+        "content_summary": "Rocky Linux, adopted by millions, delivered by CIQ. Since its inception in 2021, open source Rocky Linux has become the trusted option for organizations seeking a rock-solid, modern Enterprise Linux distribution installed on millions of servers worldwide.",
+        "searchable_content": [
+          "solution brief",
+          "rocky-linux-from-ciq",
+          "rocky-linux-from-ciq solution brief",
+          "solution",
+          "enterprise",
+          "cloud",
+          "security",
+          "performance",
+          "management",
+          "integration",
+          "container",
+          "linux",
+          "open source",
+          "rocky",
+          "adopted",
+          "delivered",
+          "since",
+          "inception",
+          "open",
+          "source",
+          "become",
+          "trusted",
+          "option",
+          "organizations",
+          "seeking",
+          "modern",
+          "installed",
+          "millions",
+          "servers"
+        ],
+        "tags": [
+          "solution_brief",
+          "rocky-linux-from-ciq"
+        ]
       }
     },
     "support": {
@@ -384,6 +563,7 @@
         "document_type": "brand-guidelines",
         "file_size": "920.4 KB",
         "pages": 1,
+        "description": "Official CIQ brand guidelines document containing logo usage standards, color specifications, and visual identity requirements.",
         "content_summary": "Workhorse variant\n(1 color)\nHero variant\n(2 color)\nThe CIQ brand is more than a logo or color palette—it's our reputation. These primary \nlogos best represent us visually and should be used whenever p...",
         "searchable_content": [
           "brand guidelines",
