@@ -72,27 +72,54 @@ function transformCLIResult(cliResult: any, showAllVariants: boolean = false): A
   // Transform each product's assets - CLI backend already filtered to primary variants
   Object.entries(cliResult.assets).forEach(([product, productAssets]: [string, any]) => {
     Object.entries(productAssets).forEach(([assetKey, asset]: [string, any]) => {
-      // Create primary asset (light mode)
-      assets.push({
-        id: `${product}-${asset.layout}-light`,
-        title: asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset",
-        displayName: `${product.toUpperCase()} Logo`,
-        description: `${product} ${asset.type} - ${asset.layout}`,
-        url: asset.url, // Use URL as-is (relative path)
-        thumbnailUrl: asset.url,
-        fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
-        dimensions: { width: 100, height: 100 },
-        tags: asset.tags || [],
-        brand: product.toUpperCase(),
-        category: 'product-logo',
-        assetType: 'logo',
-        metadata: {
-          backgroundMode: 'light',
-          variant: asset.layout,
-          isPrimary: true, // CLI backend returns primary variants
-          usageContext: 'general use'
-        }
-      });
+      if (asset.type === 'document') {
+        // Handle PDF documents
+        assets.push({
+          id: `${product}-${assetKey}`,
+          title: asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Document",
+          displayName: asset.document_type === 'brand-guidelines' 
+            ? 'Brand Guidelines'
+            : `${product.toUpperCase()} ${asset.document_type?.replace('-', ' ')?.replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'Document'}`,
+          description: asset.content_summary || `${product} ${asset.document_type || 'document'}`,
+          url: asset.url,
+          thumbnailUrl: asset.thumbnail_url || asset.url,
+          fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'pdf' : 'pdf',
+          dimensions: { width: 300, height: 400 }, // PDF thumbnail size
+          tags: asset.tags || [],
+          brand: product === 'general' ? 'CIQ' : product.toUpperCase(),
+          category: asset.document_type === 'brand-guidelines' ? 'brand-document' : 'product-document',
+          assetType: 'document',
+          metadata: {
+            documentType: asset.document_type,
+            pages: asset.pages || 1,
+            fileSize: asset.file_size,
+            isPrimary: true,
+            usageContext: asset.document_type === 'brand-guidelines' ? 'brand guidelines' : 'product information'
+          }
+        });
+      } else {
+        // Handle logo assets (existing logic)
+        assets.push({
+          id: `${product}-${asset.layout}-light`,
+          title: asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset",
+          displayName: `${product.toUpperCase()} Logo`,
+          description: `${product} ${asset.type} - ${asset.layout}`,
+          url: asset.url, // Use URL as-is (relative path)
+          thumbnailUrl: asset.url,
+          fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
+          dimensions: { width: 100, height: 100 },
+          tags: asset.tags || [],
+          brand: product.toUpperCase(),
+          category: 'product-logo',
+          assetType: 'logo',
+          metadata: {
+            backgroundMode: 'light',
+            variant: asset.layout,
+            isPrimary: true, // CLI backend returns primary variants
+            usageContext: 'general use'
+          }
+        });
+      }
       
       // Add dark mode variant if requested (rare case)
       if (showAllVariants) {

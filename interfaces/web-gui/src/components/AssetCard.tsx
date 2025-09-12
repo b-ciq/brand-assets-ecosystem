@@ -4,8 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import { Asset } from '@/types/asset';
 import { FileText, Settings, Zap } from 'lucide-react';
 import DownloadModalNew from './DownloadModalNew';
+import DocumentPreviewModal from './DocumentPreviewModal';
 import { QuickDownloadService } from '@/lib/quickDownload';
 import { getProductDefaults, getQuickDownloadDescription } from '@/lib/productDefaults';
+import { getAssetHandler } from '@/lib/assetDisplayHandlers';
 
 interface AssetCardProps {
   asset: Asset;
@@ -21,6 +23,11 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
   const [quickDownloadError, setQuickDownloadError] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  
+  // Get asset-specific display handler
+  const handler = getAssetHandler(asset.assetType);
+  const imageConstraints = handler.getImageConstraints();
+  const cardText = handler.getCardText(asset);
   
   // Simple product defaults - no complexity
   const productDefaults = getProductDefaults(asset.id);
@@ -152,10 +159,14 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
             <img
               src={asset.thumbnailUrl || asset.url}
               alt={asset.title}
-              className={`max-w-full object-contain transition-opacity duration-200 ${
+              className={`max-w-full transition-opacity duration-200 ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               }`}
-              style={{ maxHeight: '100px' }}
+              style={{
+                maxHeight: imageConstraints.maxHeight,
+                maxWidth: imageConstraints.maxWidth,
+                objectFit: imageConstraints.objectFit
+              }}
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
             />
@@ -183,12 +194,12 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
         <div className="px-4 py-3 space-y-2">
           {/* Title */}
           <div className="text-white font-medium text-center text-sm">
-            {asset.brand || 'Brand'} logo
+            {cardText.title}
           </div>
           
-          {/* Settings */}
+          {/* Subtitle */}
           <div className="text-xs text-white/80 text-center">
-            Medium PNG • dark mode
+            {cardText.subtitle}
           </div>
           
           {/* Buttons */}
@@ -231,12 +242,20 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
         </div>
       </div>
 
-      {/* Download Modal */}
-      <DownloadModalNew 
-        asset={asset}
-        isOpen={showDownloadModal}
-        onClose={() => setShowDownloadModal(false)}
-      />
+      {/* Download Modal - Asset type specific */}
+      {asset.assetType === 'document' ? (
+        <DocumentPreviewModal 
+          asset={asset}
+          isOpen={showDownloadModal}
+          onClose={() => setShowDownloadModal(false)}
+        />
+      ) : (
+        <DownloadModalNew 
+          asset={asset}
+          isOpen={showDownloadModal}
+          onClose={() => setShowDownloadModal(false)}
+        />
+      )}
     </div>
   );
 }
