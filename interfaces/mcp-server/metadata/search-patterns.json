@@ -54,6 +54,13 @@
       "ciq",
       "company",
       "corporate"
+    ],
+    "general": [
+      "general",
+      "brand",
+      "guidelines",
+      "style",
+      "guide"
     ]
   },
   "search_rules": {
@@ -62,7 +69,7 @@
       "rules": {
         "include_for_general_searches": true,
         "include_for_product_specific": false,
-        "general_search_keywords": ["logo", "brand", "company", "all", ""],
+        "general_search_keywords": ["logo", "brand", "company", "all", "", "brief", "solution", "guidelines", "document", "pdf"],
         "exclude_when_single_product_found": true
       }
     },
