@@ -222,6 +222,117 @@
         "tags": []
       }
     },
+    "bridge": {
+      "horizontal_black": {
+        "url": "/assets/products/bridge/logos/CIQ-Bridge_logo_h-blk.svg",
+        "filename": "CIQ-Bridge_logo_h-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "horizontal",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "wide_format"
+        ]
+      },
+      "vertical_black": {
+        "url": "/assets/products/bridge/logos/CIQ-Bridge_logo_v-blk.svg",
+        "filename": "CIQ-Bridge_logo_v-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "vertical",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "tall_banner",
+          "stacked"
+        ]
+      },
+      "symbol_black": {
+        "url": "/assets/products/bridge/logos/CIQ-Bridge_logo_symbol-blk.svg",
+        "filename": "CIQ-Bridge_logo_symbol-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "symbol",
+        "type": "logo",
+        "size": "large",
+        "tags": []
+      }
+    },
+    "rocky-linux-from-ciq": {
+      "horizontal_black": {
+        "url": "/assets/products/rocky-linux-from-ciq/logos/RLC_logo_h-blk.svg",
+        "filename": "RLC_logo_h-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "horizontal",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "wide_format"
+        ]
+      },
+      "vertical_black": {
+        "url": "/assets/products/rocky-linux-from-ciq/logos/RLC_logo_v-blk.svg",
+        "filename": "RLC_logo_v-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "vertical",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "tall_banner",
+          "stacked"
+        ]
+      },
+      "symbol_black": {
+        "url": "/assets/products/rocky-linux-from-ciq/logos/RLC_logo_symbol-blk.svg",
+        "filename": "RLC_logo_symbol-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "symbol",
+        "type": "logo",
+        "size": "large",
+        "tags": []
+      }
+    },
+    "support": {
+      "horizontal_black": {
+        "url": "/assets/products/support/logos/CIQ-Support_logo_h-blk.svg",
+        "filename": "CIQ-Support_logo_h-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "horizontal",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "wide_format"
+        ]
+      },
+      "vertical_black": {
+        "url": "/assets/products/support/logos/CIQ-Support_logo_v-blk.svg",
+        "filename": "CIQ-Support_logo_v-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "vertical",
+        "type": "logo",
+        "size": "large",
+        "tags": [
+          "tall_banner",
+          "stacked"
+        ]
+      },
+      "symbol_black": {
+        "url": "/assets/products/support/logos/CIQ-Support_logo_symbol-blk.svg",
+        "filename": "CIQ-Support_logo_symbol-blk.svg",
+        "background": "light",
+        "color": "black",
+        "layout": "symbol",
+        "type": "logo",
+        "size": "large",
+        "tags": []
+      }
+    },
     "ciq": {
       "horizontal_black": {
         "url": "/assets/global/CIQ_logos/CIQ_logo_1clr_lightmode.svg",
@@ -328,10 +439,13 @@
     "products": [
       "apptainer",
       "ascender",
+      "bridge",
       "ciq",
       "fuzzball",
       "rlc-hardened",
       "rlc-ai",
+      "rocky-linux-from-ciq",
+      "support",
       "warewulf"
     ],
     "layouts": [
@@ -351,7 +465,7 @@
       "tall_banner",
       "wide_format"
     ],
-    "total_assets": 19
+    "total_assets": 28
   },
   "colors": {
     "available": false,

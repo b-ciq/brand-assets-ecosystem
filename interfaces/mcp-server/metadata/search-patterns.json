@@ -25,10 +25,6 @@
       "wulf"
     ],
     "rlc-hardened": [
-      "rlc",
-      "roc",
-      "rock",
-      "rocky",
       "rlc-hardened",
       "hardened"
     ],
@@ -39,6 +35,20 @@
       "rockyai",
       "artificial",
       "intelligence"
+    ],
+    "bridge": [
+      "bridge",
+      "ciq-bridge"
+    ],
+    "rocky-linux-from-ciq": [
+      "rocky",
+      "rlc",
+      "rocky-linux",
+      "rocky-from-ciq"
+    ],
+    "support": [
+      "support",
+      "ciq-support"
     ],
     "ciq": [
       "ciq",
