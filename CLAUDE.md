@@ -12,6 +12,23 @@ The Brand Assets Ecosystem is a unified web-based brand asset management system 
 
 - Asset renderer- some assets may be provided in a limited number of forms but then rendered by the system according to how the user configures the asset. one example of this is that I currently only provide 3 orientation variants in SVG format for each product logo but the system can render these into many colors, sizes and formats for the user to download. this keeps maintenance simple but allows a ton of flexibility for the user. PDFs are now fully implemented with automatic thumbnail generation from the first page, content extraction for search indexing, and simple preview/download modals.
 
+## Full Inventory Toggle (Implemented Sept 2025)
+
+The web interface includes a **Full Inventory Toggle** in the header that controls the scope of search results:
+
+- **Toggle OFF** (Curated View): Shows 16 primary assets (1 per product: horizontal layout preferred, plus primary documents)
+- **Toggle ON** (Full Inventory): Shows all 34+ assets including variants (horizontal, vertical, symbol layouts for all products)
+
+### Technical Implementation:
+- **Frontend State**: `showFullInventory` boolean state passed to search functions
+- **API Parameter**: `showAllVariants=true/false` URL parameter
+- **Backend Flag**: `--show-all-variants` flag in CLI wrapper
+- **No Duplicates**: Removed artificial light/dark variant creation that was doubling asset counts
+
+### Asset Counts by Toggle State:
+- **Curated (OFF)**: 16 assets total, 1 per search (e.g., "fuzzball" → 1 horizontal logo)  
+- **Full Inventory (ON)**: 34 assets total, all variants per search (e.g., "fuzzball" → 3 logo variants)
+
 ## Asset Types Supported
 
 ### **Logos** (SVG Format)

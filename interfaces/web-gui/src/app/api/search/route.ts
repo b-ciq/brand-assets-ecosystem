@@ -10,8 +10,11 @@ export async function GET(request: NextRequest) {
   const background = searchParams.get('background') as 'light' | 'dark' | undefined;
   const layout = searchParams.get('layout') as 'horizontal' | 'vertical' | 'symbol' | undefined;
   const showPreferredOnly = searchParams.get('showPreferredOnly') !== 'false'; // Default: true
+  const showAllVariants = searchParams.get('showAllVariants') === 'true'; // Default: false
   const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '20');
+  // When showing full inventory, use a much higher limit to show all assets
+  const defaultLimit = showAllVariants ? '200' : '20';
+  const limit = parseInt(searchParams.get('limit') || defaultLimit);
 
   try {
     // Build filters object
@@ -25,6 +28,10 @@ export async function GET(request: NextRequest) {
 
     // Search using the service
     const searchQuery = query || '';
+    // Add showAllVariants to filters if needed
+    if (showAllVariants) {
+      filters.showAllVariants = true;
+    }
     const response = await searchAssets(searchQuery, Object.keys(filters).length > 0 ? filters : undefined);
     
     // Apply pagination to the results

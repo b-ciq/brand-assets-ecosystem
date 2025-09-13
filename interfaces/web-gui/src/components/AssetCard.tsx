@@ -25,7 +25,7 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   
   // Get asset-specific display handler
-  const handler = getAssetHandler(asset.assetType);
+  const handler = getAssetHandler(asset.assetType || 'logo');
   const imageConstraints = handler.getImageConstraints();
   const cardText = handler.getCardText(asset);
   
@@ -162,7 +162,7 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
               className={`max-w-full transition-opacity duration-200 ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               } ${
-                asset.assetType === 'document' ? 'shadow-md' : ''
+(asset.assetType || 'logo') === 'document' ? 'shadow-md' : ''
               }`}
               style={{
                 maxHeight: imageConstraints.maxHeight,
