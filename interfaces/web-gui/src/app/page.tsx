@@ -16,8 +16,9 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
   const [currentFilters, setCurrentFilters] = useState<SearchFilters>({ query: '' });
   const [initialFilters, setInitialFilters] = useState<SearchFilters>({ query: '' });
+  const [showFullInventory, setShowFullInventory] = useState(true);
 
-  const handleSearch = async (filters: SearchFilters, page: number = 1, append: boolean = false) => {
+  const handleSearch = async (filters: SearchFilters, page: number = 1, append: boolean = false, useFullInventory?: boolean) => {
     if (page === 1) {
       setIsLoading(true);
       setHasSearched(true);
@@ -34,7 +35,7 @@ export default function Home() {
       if (isDemoMode) {
         // Use client-side search for demo mode
         console.log('🎭 Using demo mode client-side search');
-        const demoResult = await demoSearchAssets(filters.query || '');
+        const demoResult = await demoSearchAssets(filters.query || '', useFullInventory ?? showFullInventory);
         data = {
           assets: demoResult.assets,
           total: demoResult.total,
@@ -47,29 +48,21 @@ export default function Home() {
         if (filters.query) params.set('query', filters.query);
         if (filters.fileType) params.set('fileType', filters.fileType);
         if (filters.assetType) params.set('assetType', filters.assetType);
+        if (useFullInventory ?? showFullInventory) params.set('showAllVariants', 'true');
         params.set('page', page.toString());
 
         const response = await fetch(`/api/search?${params.toString()}`);
         if (!response.ok) throw new Error('Search failed');
         data = await response.json();
       }
-      console.log('Search response:', data);
-      console.log('Assets count:', data.assets?.length);
-      console.log('Asset brands:', data.assets?.map(a => `${a.brand} (${a.id})`));
-      
-      // Debug: Check for CIQ logos specifically
-      const ciqAssets = data.assets?.filter(a => a.brand === 'CIQ');
-      console.log('CIQ assets found:', ciqAssets?.length, ciqAssets?.map(a => a.id));
       
       if (append && page > 1) {
         // Append new assets to existing ones
         setAssets(prev => [...prev, ...data.assets]);
-        console.log('Appended assets, new total:', assets.length + data.assets.length);
       } else {
         // Replace assets (new search)
         setAssets(data.assets);
         setCurrentPage(1);
-        console.log('Set assets:', data.assets.length);
       }
       
       setHasMore(data.hasMore);
@@ -99,7 +92,6 @@ export default function Home() {
       assetType: assetType || undefined,
     };
     
-    console.log('Initial load with filters:', initialFilters);
     
     // Execute search (empty query will show all assets)
     handleSearch(initialFilters);
@@ -138,6 +130,14 @@ export default function Home() {
     handleSearch(filters, 1, false);
   }, []);
 
+  // Handle full inventory toggle
+  const handleToggleFullInventory = useCallback((show: boolean) => {
+    setShowFullInventory(show);
+    // Re-run current search with new setting immediately, passing the new value explicitly
+    setCurrentPage(1);
+    handleSearch(currentFilters, 1, false, show);
+  }, [currentFilters]);
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--quantic-bg-primary)' }}>
       {/* Header */}
@@ -146,6 +146,8 @@ export default function Home() {
         isLoading={isLoading}
         initialQuery={initialFilters.query || ''}
         initialAssetType={initialFilters.assetType || ''}
+        showFullInventory={showFullInventory}
+        onToggleFullInventory={handleToggleFullInventory}
       />
 
       {/* Main content */}

@@ -20,14 +20,19 @@ export interface SimpleSearchFilters {
   background?: 'light' | 'dark';
   layout?: 'horizontal' | 'vertical' | 'symbol';
   showPreferredOnly?: boolean; // Default: true - only show preferred variants
+  showAllVariants?: boolean; // Default: false - show all variants instead of just primary ones
 }
 
 /**
  * Call unified CLI search directly - no more complex transformations
  */
-async function callUnifiedCLI(query: string): Promise<any> {
+async function callUnifiedCLI(query: string, showAllVariants: boolean = false): Promise<any> {
   return new Promise((resolve, reject) => {
-    const python = spawn('python3', [CLI_WRAPPER_PATH, query]);
+    const args = [CLI_WRAPPER_PATH, query];
+    if (showAllVariants) {
+      args.push('--show-all-variants');
+    }
+    const python = spawn('python3', args);
     let output = '';
     let errorOutput = '';
 
@@ -72,48 +77,50 @@ function transformCLIResult(cliResult: any, showAllVariants: boolean = false): A
   // Transform each product's assets - CLI backend already filtered to primary variants
   Object.entries(cliResult.assets).forEach(([product, productAssets]: [string, any]) => {
     Object.entries(productAssets).forEach(([assetKey, asset]: [string, any]) => {
-      // Create primary asset (light mode)
-      assets.push({
-        id: `${product}-${asset.layout}-light`,
-        title: asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset",
-        displayName: `${product.toUpperCase()} Logo`,
-        description: `${product} ${asset.type} - ${asset.layout}`,
-        url: asset.url, // Use URL as-is (relative path)
-        thumbnailUrl: asset.url,
-        fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
-        dimensions: { width: 100, height: 100 },
-        tags: asset.tags || [],
-        brand: product.toUpperCase(),
-        category: 'product-logo',
-        assetType: 'logo',
-        metadata: {
-          backgroundMode: 'light',
-          variant: asset.layout,
-          isPrimary: true, // CLI backend returns primary variants
-          usageContext: 'general use'
-        }
-      });
-      
-      // Add dark mode variant if requested (rare case)
-      if (showAllVariants) {
+      if (asset.type === 'document') {
+        // Handle PDF documents
         assets.push({
-          id: `${product}-${asset.layout}-dark`,
-          title: `${asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset"} (Dark)`,
-          displayName: `${product.toUpperCase()} Logo (Dark)`,
-          description: `${product} ${asset.type} - ${asset.layout} (dark mode)`,
+          id: `${product}-${assetKey}`,
+          title: asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Document",
+          displayName: asset.document_type === 'brand-guidelines' 
+            ? 'Brand Guidelines'
+            : `${product.toUpperCase()} ${asset.document_type?.replace('-', ' ')?.replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'Document'}`,
+          description: asset.description || asset.content_summary || `${product} ${asset.document_type || 'document'}`,
           url: asset.url,
+          thumbnailUrl: asset.thumbnail_url || asset.url,
+          fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'pdf' : 'pdf',
+          dimensions: { width: 300, height: 400 }, // PDF thumbnail size
+          tags: asset.tags || [],
+          brand: product === 'general' ? 'CIQ' : product.toUpperCase(),
+          category: asset.document_type === 'brand-guidelines' ? 'brand-document' : 'product-document',
+          assetType: 'document',
+          metadata: {
+            documentType: asset.document_type,
+            pages: asset.pages || 1,
+            fileSize: asset.file_size,
+            isPrimary: true,
+            usageContext: asset.document_type === 'brand-guidelines' ? 'brand guidelines' : 'product information'
+          }
+        });
+      } else {
+        // Handle logo assets - don't create artificial light/dark variants
+        assets.push({
+          id: `${product}-${asset.layout}`,
+          title: asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset",
+          displayName: `${product.toUpperCase()} Logo`,
+          description: `${product} ${asset.type} - ${asset.layout}`,
+          url: asset.url, // Use URL as-is (relative path)
           thumbnailUrl: asset.url,
           fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
           dimensions: { width: 100, height: 100 },
-          tags: [...(asset.tags || []), 'dark-mode'],
+          tags: asset.tags || [],
           brand: product.toUpperCase(),
           category: 'product-logo',
           assetType: 'logo',
           metadata: {
-            backgroundMode: 'dark',
             variant: asset.layout,
-            isPrimary: false,
-            usageContext: 'dark themes'
+            isPrimary: true, // CLI backend returns primary variants
+            usageContext: 'general use'
           }
         });
       }
@@ -142,10 +149,10 @@ export async function searchAssets(query: string, filters?: SimpleSearchFilters)
     console.log(`🔄 Calling unified CLI search for: "${query}"`);
     
     // Call unified CLI search directly
-    const cliResult = await callUnifiedCLI(query || '');
+    const showAllVariants = filters?.showAllVariants === true;
+    const cliResult = await callUnifiedCLI(query || '', showAllVariants);
     
-    // Transform CLI result to web format - CLI already returns primary variants
-    const showAllVariants = filters?.showPreferredOnly === false;
+    // Transform CLI result to web format
     let assets = transformCLIResult(cliResult, showAllVariants);
     
     // Apply additional filters if specified

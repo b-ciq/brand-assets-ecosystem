@@ -94,9 +94,11 @@ interface HeaderProps {
   isLoading?: boolean;
   initialQuery?: string;
   initialAssetType?: string;
+  showFullInventory?: boolean;
+  onToggleFullInventory?: (show: boolean) => void;
 }
 
-export default function Header({ onSearch, isLoading = false, initialQuery = '', initialAssetType = '' }: HeaderProps) {
+export default function Header({ onSearch, isLoading = false, initialQuery = '', initialAssetType = '', showFullInventory = true, onToggleFullInventory }: HeaderProps) {
   const [query, setQuery] = useState(initialQuery);
   const [assetType, setAssetType] = useState(initialAssetType);
 
@@ -162,6 +164,37 @@ export default function Header({ onSearch, isLoading = false, initialQuery = '',
           </div>
         </div>
         <div className="content-stretch flex gap-2 sm:gap-4 lg:gap-6 items-center justify-start relative shrink-0" data-node-id="1:8979">
+          {/* Full Inventory Toggle */}
+          <div className="flex items-center gap-2 shrink-0">
+            <label className="flex items-center cursor-pointer" data-testid="full-inventory-toggle">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={showFullInventory}
+                  onChange={(e) => onToggleFullInventory?.(e.target.checked)}
+                  disabled={isLoading}
+                  className="sr-only"
+                />
+                <div 
+                  className={`block w-10 h-6 rounded-full transition-colors cursor-pointer ${
+                    showFullInventory 
+                      ? 'bg-[#097049]' 
+                      : 'bg-[#373a41]'
+                  }`}
+                  onClick={() => onToggleFullInventory?.(!showFullInventory)}
+                >
+                  <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform pointer-events-none ${
+                    showFullInventory 
+                      ? 'transform translate-x-4' 
+                      : ''
+                  }`} />
+                </div>
+              </div>
+              <span className="ml-2 text-[#cecfd2] text-[12px] font-['Inter:Medium',_sans-serif] font-medium uppercase text-nowrap">
+                FULL INVENTORY
+              </span>
+            </label>
+          </div>
           <select
             value={assetType}
             onChange={(e) => handleAssetTypeChange(e.target.value)}

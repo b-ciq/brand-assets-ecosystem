@@ -10,12 +10,81 @@ The Brand Assets Ecosystem is a unified web-based brand asset management system 
 
 - unified search provides a reliable, accurate and consistent result regardless of interaction point (web, MCP, slack, etc). We have strctured this with a unified approach so it is easy to maintain and improve upon.
 
-- Asset renderer- some assets may be provided in a limited number of forms but then rendered by the system according to how the user configures the asset. one example of this is that I currently only provide 3 orientation variants in SVG format for each product logo but the system can render these into many colors, sizes and formats for the user to download. this keeps maintenance simple but allows a ton of flexibility for the user. Another example will be in the future when we add PDFs to the type of available assets and the system will render a visual thumbnail of the first page of the pdf to show in the search results view (this functionmality is on the roadmpa but does not exist yet)
+- Asset renderer- some assets may be provided in a limited number of forms but then rendered by the system according to how the user configures the asset. one example of this is that I currently only provide 3 orientation variants in SVG format for each product logo but the system can render these into many colors, sizes and formats for the user to download. this keeps maintenance simple but allows a ton of flexibility for the user. PDFs are now fully implemented with automatic thumbnail generation from the first page, content extraction for search indexing, and simple preview/download modals.
+
+## Full Inventory Toggle (Implemented Sept 2025)
+
+The web interface includes a **Full Inventory Toggle** in the header that controls the scope of search results:
+
+- **Toggle OFF** (Curated View): Shows 16 primary assets (1 per product: horizontal layout preferred, plus primary documents)
+- **Toggle ON** (Full Inventory): Shows all 34+ assets including variants (horizontal, vertical, symbol layouts for all products)
+
+### Technical Implementation:
+- **Frontend State**: `showFullInventory` boolean state passed to search functions
+- **API Parameter**: `showAllVariants=true/false` URL parameter
+- **Backend Flag**: `--show-all-variants` flag in CLI wrapper
+- **No Duplicates**: Removed artificial light/dark variant creation that was doubling asset counts
+
+### Asset Counts by Toggle State:
+- **Curated (OFF)**: 16 assets total, 1 per search (e.g., "fuzzball" → 1 horizontal logo)  
+- **Full Inventory (ON)**: 34 assets total, all variants per search (e.g., "fuzzball" → 3 logo variants)
+
+## Asset Types Supported
+
+### **Logos** (SVG Format)
+- **3 Variants per Product**: horizontal, vertical, symbol layouts
+- **Configurable Rendering**: Multiple colors, sizes, formats (PNG, JPG, SVG)
+- **Interactive Modal**: Complex configuration options for customization
+
+### **Documents** (PDF Format)  
+- **Solution Briefs**: Product-specific PDF documents with technical information
+- **Brand Guidelines**: General CIQ branding and logo usage guidelines
+- **Auto-Processing**: Comprehensive content analysis and optimization pipeline
+
+#### **PDF Processing Pipeline** (Complete Implementation)
+
+**1. Content Extraction & Analysis**:
+- **Text Extraction**: Full text content extraction from PDF using pypdf
+- **Content Summary**: Intelligent summary generation from first 3 pages
+- **Smart Description**: User-friendly descriptions (not raw extracted text)
+- **Searchable Keywords**: Relevant search terms extracted from document content
+
+**2. Document Classification**:
+- **Auto-detect Document Type**: solution-brief, brand-guidelines, datasheet, whitepaper, etc.
+- **Product Association**: Automatic linking to specific products or marking as general
+- **Metadata Extraction**: Pages count, file size, creation analysis
+
+**3. Search Optimization**:
+- **Keyword Extraction**: Pull relevant terms from actual document content
+- **Search Patterns**: Auto-update `search-patterns.json` if new product terms found
+- **Content Indexing**: Full-text search capability through unified backend
+
+**4. Visual Processing**:
+- **Thumbnail Generation**: Tight content-aware cropping with zero padding
+- **Aspect Normalization**: Standardized 8.5:11 ratio (0.773) for consistent display
+- **Responsive Display**: Smart scaling from mobile (2-col) to desktop (6-col) layouts
+
+**5. Processing Command**:
+```bash
+# Auto-discover and process new PDFs
+python3 interfaces/mcp-server/pdf_processor.py path/to/document.pdf
+
+# Batch process all PDFs in directory
+find interfaces/web-gui/public/assets -name "*.pdf" -exec python3 interfaces/mcp-server/pdf_processor.py {} \;
+```
+- **Simple Modal**: Preview thumbnail + direct download (no configuration needed)
 
 ## use cases
+
+### **Logo Use Cases**
 user uses claude desktop with the mcp installed and asks: "find me a fuzzball logo" the chat UI responds with: "here is a link to the fuzzball logo" and provide the url to link directly to the web UI showing the preferred fuzzball logo as a search result tile. In the web UI the user can click the download button to get the default version of the asset immediately or can continue to configure the asset manually in the modal window by selecting things like: dark mode, Vertical variant, jpeg, large size and then downloading it.
 
 user uses claude desktop with the mcp installed and asks: "find me a fuzzball logo for dark mode in PNG format" the chat UI responds with: "here is a link to the fuzzball logo you requested" and provides the url to link directly to the web UI showing the fuzzball modal with the requested configuration. The users sees the modal set to dark mode and PNG format. they can download immediately from this screen or can continue to modify the asset configuration further.
+
+### **Document Use Cases**  
+user uses claude desktop with the mcp installed and asks: "find me bridge solution brief" the chat UI responds with: "here is the bridge solution brief" and provides the url to link directly to the web UI showing the PDF as a search result tile. In the web UI the user can click to open a preview modal showing the PDF thumbnail and download the document directly.
+
+user asks: "brand guidelines" the chat UI responds with: "here are the CIQ brand guidelines" and provides a link to the brand guidelines PDF with preview and download capabilities.
 
 
 ## Unified Search Architecture (Implemented Sept 2025)

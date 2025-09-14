@@ -1,5 +1,5 @@
-export type AssetCategory = 'company-logo' | 'product-logo' | 'document' | 'color-palette' | 'font';
-export type AssetType = 'logo' | 'pdf' | 'color' | 'font' | 'icon';
+export type AssetCategory = 'company-logo' | 'product-logo' | 'document' | 'color-palette' | 'font' | 'brand-document' | 'product-document';
+export type AssetType = 'logo' | 'document' | 'pdf' | 'color' | 'font' | 'icon';
 
 export interface Asset {
   id: string;
@@ -44,6 +44,8 @@ export interface Asset {
     colorCode?: string; // For color palette assets
     fontFamily?: string; // For font assets  
     documentType?: 'solution-brief' | 'datasheet' | 'guide'; // For PDF assets
+    pages?: number; // For document assets
+    fileSize?: string; // For all assets
   };
 }
 

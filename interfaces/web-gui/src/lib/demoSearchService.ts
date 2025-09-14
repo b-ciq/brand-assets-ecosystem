@@ -37,34 +37,62 @@ function transformAssetData(cliStyleResult: any): Asset[] {
   
   Object.entries(cliStyleResult.assets).forEach(([product, productAssets]: [string, any]) => {
     Object.entries(productAssets).forEach(([assetKey, asset]: [string, any]) => {
-      assets.push({
-        id: `${product}-${asset.layout}-light`,
-        title: asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset",
-        displayName: `${product.toUpperCase()} Logo`,
-        description: `${product} ${asset.type} - ${asset.layout}`,
-        url: `https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main/interfaces/web-gui/public${asset.url}`,
-        thumbnailUrl: asset.url, // Use relative path for static export
-        fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
-        dimensions: { width: 100, height: 100 },
-        tags: asset.tags || [],
-        brand: product.toUpperCase(),
-        category: 'product-logo',
-        assetType: 'logo',
-        metadata: {
-          backgroundMode: 'light',
-          variant: asset.layout,
-          isPrimary: true,
-          usageContext: 'general use'
-        }
-      });
+      if (asset.type === 'document') {
+        // Handle document assets (PDFs)
+        const documentType = asset.document_type === 'brand-guidelines' ? 'Brand Guidelines' : 
+          `${product.toUpperCase()} ${asset.document_type?.replace('-', ' ')?.replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'Document'}`;
+        
+        assets.push({
+          id: `${product}-${assetKey}`,
+          title: asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Document",
+          displayName: documentType,
+          description: asset.description || asset.content_summary || `${product} ${asset.document_type || 'document'}`,
+          url: `https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main/interfaces/web-gui/public${asset.url}`,
+          thumbnailUrl: asset.thumbnail_url, // Use thumbnail for documents
+          fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'pdf' : 'pdf',
+          dimensions: { width: 100, height: 100 },
+          tags: asset.tags || [],
+          brand: product.toUpperCase(),
+          category: 'product-document',
+          assetType: 'document',
+          metadata: {
+            documentType: asset.document_type,
+            pages: asset.pages,
+            fileSize: asset.file_size,
+            usageContext: 'general use'
+          }
+        });
+      } else {
+        // Handle logo assets
+        assets.push({
+          id: `${product}-${asset.layout}-light`,
+          title: asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset",
+          displayName: `${product.toUpperCase()} Logo`,
+          description: `${product} ${asset.type} - ${asset.layout}`,
+          url: `https://raw.githubusercontent.com/b-ciq/brand-assets-ecosystem/main/interfaces/web-gui/public${asset.url}`,
+          thumbnailUrl: asset.url, // Use relative path for static export
+          fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
+          dimensions: { width: 100, height: 100 },
+          tags: asset.tags || [],
+          brand: product.toUpperCase(),
+          category: 'product-logo',
+          assetType: 'logo',
+          metadata: {
+            backgroundMode: 'light',
+            variant: asset.layout,
+            isPrimary: true,
+            usageContext: 'general use'
+          }
+        });
+      }
     });
   });
   
   return assets;
 }
 
-export async function demoSearchAssets(query: string): Promise<DemoSearchResponse> {
-  console.log(`🔄 Demo mode search for: "${query}"`);
+export async function demoSearchAssets(query: string, showAllVariants: boolean = false): Promise<DemoSearchResponse> {
+  console.log(`🔄 Demo mode search for: "${query}" (showAllVariants: ${showAllVariants})`);
   
   const queryLower = query.toLowerCase().trim();
   let results: any = {};
@@ -79,7 +107,7 @@ export async function demoSearchAssets(query: string): Promise<DemoSearchRespons
       results[resolvedProduct] = (assetInventory.assets as any)[resolvedProduct];
       totalFound = Object.keys((assetInventory.assets as any)[resolvedProduct]).length;
     }
-  } else if (queryLower === '' || ['all', 'logo', 'logos'].includes(queryLower)) {
+  } else if (queryLower === '' || ['all', 'logo', 'logos', 'pdf', 'solution', 'brief', 'document', 'documents', 'brand', 'guidelines'].includes(queryLower)) {
     // Empty query - show all primary assets (like CLI backend)
     console.log(`🔍 Demo: Empty/general search - showing all primary assets`);
     results = { ...assetInventory.assets };
@@ -97,7 +125,10 @@ export async function demoSearchAssets(query: string): Promise<DemoSearchRespons
           queryLower.includes(product.toLowerCase()) ||
           queryLower.includes(assetKey.toLowerCase()) ||
           queryLower.includes((assetInfo as any).filename?.toLowerCase() || '') ||
-          ((assetInfo as any).tags || []).some((tag: string) => queryLower.includes(tag.toLowerCase()))
+          queryLower.includes((assetInfo as any).description?.toLowerCase() || '') ||
+          queryLower.includes((assetInfo as any).document_type?.toLowerCase() || '') ||
+          ((assetInfo as any).tags || []).some((tag: string) => queryLower.includes(tag.toLowerCase())) ||
+          ((assetInfo as any).searchable_content || []).some((content: string) => content.toLowerCase().includes(queryLower))
         );
         
         if (matches) {
@@ -114,29 +145,56 @@ export async function demoSearchAssets(query: string): Promise<DemoSearchRespons
   
   // No need to manually add CIQ - it's already in assetInventory.assets
   
-  // Filter to primary variants only (horizontal layout preferred)
-  const filteredResults: any = {};
+  // Filter based on showAllVariants setting
+  let filteredResults: any = {};
   let filteredTotal = 0;
   
-  for (const [product, productAssets] of Object.entries(results)) {
-    let primaryKey = null;
-    
-    // Find horizontal layout first
-    for (const [assetKey, assetInfo] of Object.entries(productAssets as any)) {
-      if ((assetInfo as any).layout === 'horizontal') {
-        primaryKey = assetKey;
-        break;
+  if (showAllVariants) {
+    // Show all variants - no filtering
+    filteredResults = { ...results };
+    filteredTotal = Object.values(results).reduce((sum: number, productAssets) => 
+      sum + Object.keys(productAssets as any).length, 0
+    );
+  } else {
+    // Filter to primary variants only (horizontal layout preferred for logos, always include documents)
+    for (const [product, productAssets] of Object.entries(results)) {
+      const productResult: any = {};
+      
+      // Always include documents (they are not variants of each other)
+      for (const [assetKey, assetInfo] of Object.entries(productAssets as any)) {
+        if ((assetInfo as any).type === 'document') {
+          productResult[assetKey] = assetInfo;
+          filteredTotal++;
+        }
       }
-    }
-    
-    // Fallback to first asset
-    if (!primaryKey && Object.keys(productAssets as any).length > 0) {
-      primaryKey = Object.keys(productAssets as any)[0];
-    }
-    
-    if (primaryKey) {
-      filteredResults[product] = {[primaryKey]: (productAssets as any)[primaryKey]};
-      filteredTotal++;
+      
+      // Find primary logo (horizontal layout preferred)
+      let primaryLogoKey = null;
+      for (const [assetKey, assetInfo] of Object.entries(productAssets as any)) {
+        if ((assetInfo as any).type === 'logo' && (assetInfo as any).layout === 'horizontal') {
+          primaryLogoKey = assetKey;
+          break;
+        }
+      }
+      
+      // Fallback to first logo if no horizontal found
+      if (!primaryLogoKey) {
+        for (const [assetKey, assetInfo] of Object.entries(productAssets as any)) {
+          if ((assetInfo as any).type === 'logo') {
+            primaryLogoKey = assetKey;
+            break;
+          }
+        }
+      }
+      
+      if (primaryLogoKey) {
+        productResult[primaryLogoKey] = (productAssets as any)[primaryLogoKey];
+        filteredTotal++;
+      }
+      
+      if (Object.keys(productResult).length > 0) {
+        filteredResults[product] = productResult;
+      }
     }
   }
   

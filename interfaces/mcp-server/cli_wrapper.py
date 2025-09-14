@@ -92,12 +92,18 @@ def enhanced_search(query: str, asset_data: Dict, patterns: Dict, show_all_varia
             product_matches = {}
             
             for asset_key, asset_info in assets.items():
-                # Check if query matches product name, asset key, filename, or tags
+                # Check if query matches product name, asset key, filename, tags, or searchable content
                 matches = (
                     query_lower in product.lower() or
                     query_lower in asset_key.lower() or
                     query_lower in asset_info.get('filename', '').lower() or
-                    any(query_lower in tag.lower() for tag in asset_info.get('tags', []))
+                    any(query_lower in tag.lower() for tag in asset_info.get('tags', [])) or
+                    # For PDFs, also search in searchable content
+                    any(query_lower in content.lower() for content in asset_info.get('searchable_content', [])) or
+                    # Search in content summary for PDFs
+                    query_lower in asset_info.get('content_summary', '').lower() or
+                    # Search in document type
+                    query_lower in asset_info.get('document_type', '').replace('-', ' ').lower()
                 )
                 
                 if matches:
@@ -143,20 +149,31 @@ def enhanced_search(query: str, asset_data: Dict, patterns: Dict, show_all_varia
         filtered_total = 0
         
         for product, product_assets in results.items():
-            # Find primary variant (horizontal layout preferred, fallback to first available)
-            primary_key = None
-            for asset_key, asset_info in product_assets.items():
-                if asset_info.get('layout') == 'horizontal':
-                    primary_key = asset_key
-                    break
+            filtered_assets = {}
             
-            # Fallback to first asset if no horizontal found
-            if not primary_key and product_assets:
-                primary_key = list(product_assets.keys())[0]
+            # Always include documents (they are not variants of each other)
+            documents = {k: v for k, v in product_assets.items() if v.get('type') == 'document'}
+            filtered_assets.update(documents)
             
-            if primary_key:
-                filtered_results[product] = {primary_key: product_assets[primary_key]}
-                filtered_total += 1
+            # For logos, find primary variant (horizontal layout preferred)
+            logos = {k: v for k, v in product_assets.items() if v.get('type') != 'document'}
+            if logos:
+                primary_logo_key = None
+                for asset_key, asset_info in logos.items():
+                    if asset_info.get('layout') == 'horizontal':
+                        primary_logo_key = asset_key
+                        break
+                
+                # Fallback to first logo if no horizontal found
+                if not primary_logo_key:
+                    primary_logo_key = list(logos.keys())[0]
+                
+                if primary_logo_key:
+                    filtered_assets[primary_logo_key] = logos[primary_logo_key]
+            
+            if filtered_assets:
+                filtered_results[product] = filtered_assets
+                filtered_total += len(filtered_assets)
         
         results = filtered_results
         total_found = filtered_total

@@ -4,8 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import { Asset } from '@/types/asset';
 import { FileText, Settings, Zap } from 'lucide-react';
 import DownloadModalNew from './DownloadModalNew';
+import DocumentPreviewModal from './DocumentPreviewModal';
 import { QuickDownloadService } from '@/lib/quickDownload';
 import { getProductDefaults, getQuickDownloadDescription } from '@/lib/productDefaults';
+import { getAssetHandler } from '@/lib/assetDisplayHandlers';
 
 interface AssetCardProps {
   asset: Asset;
@@ -21,6 +23,11 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
   const [quickDownloadError, setQuickDownloadError] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  
+  // Get asset-specific display handler
+  const handler = getAssetHandler(asset.assetType || 'logo');
+  const imageConstraints = handler.getImageConstraints();
+  const cardText = handler.getCardText(asset);
   
   // Simple product defaults - no complexity
   const productDefaults = getProductDefaults(asset.id);
@@ -140,28 +147,38 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
       }}
     >
       {/* Image container - 3x3 area */}
-      <div className="relative h-full overflow-hidden p-8 flex items-center justify-center group/image rounded-lg" style={{ backgroundColor: getImageBackground() }}>
+      <div className="relative h-full overflow-hidden p-4 flex items-center justify-center group/image rounded-lg" style={{ backgroundColor: getImageBackground() }}>
         
         {!imageError && shouldLoadImage ? (
           <>
             {!imageLoaded && (
-              <div className="absolute inset-8 flex items-center justify-center">
+              <div className="absolute inset-4 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: 'var(--quantic-color-brand-600)' }}></div>
               </div>
             )}
             <img
               src={asset.thumbnailUrl || asset.url}
               alt={asset.title}
-              className={`max-w-full object-contain transition-opacity duration-200 ${
+              className={`max-w-full transition-opacity duration-200 ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
+              } ${
+(asset.assetType || 'logo') === 'document' ? 'shadow-md' : ''
               }`}
-              style={{ maxHeight: '100px' }}
+              style={{
+                maxHeight: imageConstraints.maxHeight,
+                maxWidth: imageConstraints.maxWidth,
+                objectFit: imageConstraints.objectFit,
+                ...(asset.assetType === 'document' && {
+                  filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15))',
+                  borderRadius: '4px'
+                })
+              }}
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
             />
           </>
         ) : !shouldLoadImage ? (
-          <div className="absolute inset-8 flex items-center justify-center">
+          <div className="absolute inset-4 flex items-center justify-center">
             <div className="text-center" style={{ color: 'var(--quantic-color-gray-dark-mode-400)' }}>
               <FileText size={32} className="mx-auto mb-2" />
               <div className="text-sm">{asset.fileType.toUpperCase()}</div>
@@ -183,12 +200,12 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
         <div className="px-4 py-3 space-y-2">
           {/* Title */}
           <div className="text-white font-medium text-center text-sm">
-            {asset.brand || 'Brand'} logo
+            {cardText.title}
           </div>
           
-          {/* Settings */}
+          {/* Subtitle */}
           <div className="text-xs text-white/80 text-center">
-            Medium PNG • dark mode
+            {cardText.subtitle}
           </div>
           
           {/* Buttons */}
@@ -215,28 +232,39 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
               )}
             </button>
             
-            <button
-              onClick={handleCustomizeDownload}
-              className="flex items-center justify-center w-10 h-10 rounded-md transition-all duration-200 border"
-              style={{
-                backgroundColor: 'var(--quantic-color-gray-dark-mode-700)',
-                borderColor: 'var(--quantic-color-gray-dark-mode-600)',
-                color: 'var(--quantic-color-gray-dark-mode-300)'
-              }}
-              title="Customize"
-            >
-              <Settings size={16} />
-            </button>
+            {/* Only show customize button for logos, not documents */}
+            {asset.assetType !== 'document' && (
+              <button
+                onClick={handleCustomizeDownload}
+                className="flex items-center justify-center aspect-square h-full rounded-md transition-all duration-200 border px-2"
+                style={{
+                  backgroundColor: 'var(--quantic-color-gray-dark-mode-700)',
+                  borderColor: 'var(--quantic-color-gray-dark-mode-600)',
+                  color: 'var(--quantic-color-gray-dark-mode-300)'
+                }}
+                title="Customize"
+              >
+                <Settings size={16} />
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Download Modal */}
-      <DownloadModalNew 
-        asset={asset}
-        isOpen={showDownloadModal}
-        onClose={() => setShowDownloadModal(false)}
-      />
+      {/* Download Modal - Asset type specific */}
+      {asset.assetType === 'document' ? (
+        <DocumentPreviewModal 
+          asset={asset}
+          isOpen={showDownloadModal}
+          onClose={() => setShowDownloadModal(false)}
+        />
+      ) : (
+        <DownloadModalNew 
+          asset={asset}
+          isOpen={showDownloadModal}
+          onClose={() => setShowDownloadModal(false)}
+        />
+      )}
     </div>
   );
 }
