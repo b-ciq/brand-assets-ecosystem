@@ -35,7 +35,7 @@ export default function Home() {
       if (isDemoMode) {
         // Use client-side search for demo mode
         console.log('🎭 Using demo mode client-side search');
-        const demoResult = await demoSearchAssets(filters.query || '', useFullInventory ?? showFullInventory);
+        const demoResult = await demoSearchAssets(filters.query || '', useFullInventory ?? showFullInventory, filters.assetType);
         data = {
           assets: demoResult.assets,
           total: demoResult.total,
