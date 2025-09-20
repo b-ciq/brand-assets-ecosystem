@@ -98,7 +98,7 @@ interface HeaderProps {
   onToggleFullInventory?: (show: boolean) => void;
 }
 
-export default function Header({ onSearch, isLoading = false, initialQuery = '', initialAssetType = '', showFullInventory = true, onToggleFullInventory }: HeaderProps) {
+export default function Header({ onSearch, isLoading = false, initialQuery = '', initialAssetType = 'logo', showFullInventory = false, onToggleFullInventory }: HeaderProps) {
   const [query, setQuery] = useState(initialQuery);
   const [assetType, setAssetType] = useState(initialAssetType);
 

@@ -14,9 +14,9 @@ export default function Home() {
   const [hasSearched, setHasSearched] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [currentFilters, setCurrentFilters] = useState<SearchFilters>({ query: '' });
-  const [initialFilters, setInitialFilters] = useState<SearchFilters>({ query: '' });
-  const [showFullInventory, setShowFullInventory] = useState(true);
+  const [currentFilters, setCurrentFilters] = useState<SearchFilters>({ query: '', assetType: 'logo' });
+  const [initialFilters, setInitialFilters] = useState<SearchFilters>({ query: '', assetType: 'logo' });
+  const [showFullInventory, setShowFullInventory] = useState(false);
 
   const handleSearch = async (filters: SearchFilters, page: number = 1, append: boolean = false, useFullInventory?: boolean) => {
     if (page === 1) {
@@ -85,11 +85,11 @@ export default function Home() {
     const fileType = urlParams.get('fileType');
     const assetType = urlParams.get('assetType');
     
-    // Build initial filters from URL parameters
+    // Build initial filters from URL parameters (with logo as default)
     const initialFilters: SearchFilters = {
       query: query || '',
       fileType: fileType || undefined,
-      assetType: assetType || undefined,
+      assetType: assetType || 'logo',
     };
     
     
