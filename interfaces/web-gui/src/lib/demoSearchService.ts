@@ -91,7 +91,7 @@ function transformAssetData(cliStyleResult: any): Asset[] {
   return assets;
 }
 
-export async function demoSearchAssets(query: string, showAllVariants: boolean = false): Promise<DemoSearchResponse> {
+export async function demoSearchAssets(query: string, showAllVariants: boolean = false, assetType?: string): Promise<DemoSearchResponse> {
   console.log(`🔄 Demo mode search for: "${query}" (showAllVariants: ${showAllVariants})`);
   
   const queryLower = query.toLowerCase().trim();
@@ -206,10 +206,16 @@ export async function demoSearchAssets(query: string, showAllVariants: boolean =
     recommendation: `Found ${filteredTotal} assets matching '${query}' (primary variants)`
   };
   
-  const assets = transformAssetData(cliStyleResult);
-  
+  let assets = transformAssetData(cliStyleResult);
+
+  // Apply asset type filtering if specified
+  if (assetType && assetType !== 'all' && assetType !== '') {
+    console.log(`🔽 Demo: Filtering by asset type: ${assetType}`);
+    assets = assets.filter(asset => asset.assetType === assetType);
+  }
+
   console.log(`✅ Demo search returned ${assets.length} assets for "${query}"`);
-  
+
   return {
     assets,
     total: assets.length,
