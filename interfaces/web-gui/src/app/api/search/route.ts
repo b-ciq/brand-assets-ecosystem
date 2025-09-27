@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchAssets, SimpleSearchFilters } from '@/lib/brandAssetsService';
 
-// Configure for static export in demo mode
-export const dynamic = 'force-static';
+// Configure for dynamic API routes to enable CLI backend integration
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;

@@ -21,13 +21,15 @@ interface AssetCardProps {
   asset: Asset;
   onClick?: () => void;
   variantConfig?: VariantConfig;
+  autoOpenModal?: boolean;
 }
 
-export default function AssetCard({ asset, onClick, variantConfig }: AssetCardProps) {
+export default function AssetCard({ asset, onClick, variantConfig, autoOpenModal = false }: AssetCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [shouldLoadImage, setShouldLoadImage] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [hasAutoOpened, setHasAutoOpened] = useState(false);
   const [isQuickDownloading, setIsQuickDownloading] = useState(false);
   const [quickDownloadError, setQuickDownloadError] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -124,6 +126,15 @@ export default function AssetCard({ asset, onClick, variantConfig }: AssetCardPr
 
     return () => observer.disconnect();
   }, []);
+
+  // Auto-open modal when autoOpenModal is true (only once)
+  useEffect(() => {
+    if (autoOpenModal && !showDownloadModal && !hasAutoOpened) {
+      console.log('Auto-opening modal for asset:', asset.id);
+      setShowDownloadModal(true);
+      setHasAutoOpened(true);
+    }
+  }, [autoOpenModal, asset.id, showDownloadModal, hasAutoOpened]);
 
   // Determine background color based on asset type, theme, and variant
   const getImageBackground = () => {

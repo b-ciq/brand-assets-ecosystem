@@ -61,7 +61,7 @@ def resolve_product_from_query(query: str, patterns: Dict) -> Optional[str]:
     
     return None
 
-def enhanced_search(query: str, asset_data: Dict, patterns: Dict, show_all_variants: bool = False) -> Dict[str, Any]:
+def enhanced_search(query: str, asset_data: Dict, patterns: Dict, show_all_variants: bool = False, asset_type_filter: Optional[str] = None) -> Dict[str, Any]:
     """Enhanced search with pattern matching and unified logic"""
     if not asset_data or 'assets' not in asset_data:
         return {"error": "No asset data available"}
@@ -81,8 +81,18 @@ def enhanced_search(query: str, asset_data: Dict, patterns: Dict, show_all_varia
             print(f"🎯 Including CIQ company logos for specific CIQ search", file=sys.stderr)
             # CIQ logos will be added below in the CIQ inclusion logic
         elif resolved_product in asset_data['assets']:
-            results[resolved_product] = asset_data['assets'][resolved_product]
-            total_found = len(asset_data['assets'][resolved_product])
+            if asset_type_filter:
+                # Apply asset type filtering to specific product results
+                filtered_assets = {}
+                for asset_key, asset_info in asset_data['assets'][resolved_product].items():
+                    asset_asset_type = 'document' if asset_info.get('type') == 'document' else 'logo'
+                    if asset_asset_type == asset_type_filter:
+                        filtered_assets[asset_key] = asset_info
+                results[resolved_product] = filtered_assets
+                total_found = len(filtered_assets)
+            else:
+                results[resolved_product] = asset_data['assets'][resolved_product]
+                total_found = len(asset_data['assets'][resolved_product])
         else:
             print(f"⚠️  Product '{resolved_product}' not found in asset data", file=sys.stderr)
     else:
@@ -107,6 +117,12 @@ def enhanced_search(query: str, asset_data: Dict, patterns: Dict, show_all_varia
                 )
                 
                 if matches:
+                    # Apply asset type filtering if specified
+                    if asset_type_filter:
+                        asset_asset_type = 'document' if asset_info.get('type') == 'document' else 'logo'
+                        if asset_asset_type != asset_type_filter:
+                            continue  # Skip this asset
+
                     product_matches[asset_key] = asset_info
                     total_found += 1
             
@@ -191,20 +207,24 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description='Brand Assets Search CLI')
     parser.add_argument('query', help='Search query')
-    parser.add_argument('--show-all-variants', action='store_true', 
+    parser.add_argument('--show-all-variants', action='store_true',
                        help='Show all asset variants instead of just primary variants')
-    
+    parser.add_argument('--asset-type', choices=['logo', 'document', 'all'], default='all',
+                       help='Filter by asset type (logo, document, or all)')
+
     try:
         args = parser.parse_args()
         query = args.query
         show_all_variants = args.show_all_variants
+        asset_type_filter = args.asset_type if args.asset_type != 'all' else None
     except SystemExit:
         # Fallback to old behavior for backward compatibility
         if len(sys.argv) == 2:
             query = sys.argv[1]
             show_all_variants = False
+            asset_type_filter = None
         else:
-            print(json.dumps({"error": "Usage: python cli_wrapper.py '<query>' [--show-all-variants]"}))
+            print(json.dumps({"error": "Usage: python cli_wrapper.py '<query>' [--show-all-variants] [--asset-type {logo,document,all}]"}))
             sys.exit(1)
     
     # V2 API proxy disabled for performance - go straight to fast local search
@@ -220,7 +240,7 @@ def main():
     search_patterns = load_search_patterns()
     
     # Search using enhanced logic with patterns
-    result = enhanced_search(query, asset_data, search_patterns, show_all_variants)
+    result = enhanced_search(query, asset_data, search_patterns, show_all_variants, asset_type_filter)
     result['_source'] = 'cli_unified_search'
     print(json.dumps(result))
 

@@ -26,11 +26,14 @@ export interface SimpleSearchFilters {
 /**
  * Call unified CLI search directly - no more complex transformations
  */
-async function callUnifiedCLI(query: string, showAllVariants: boolean = false): Promise<any> {
+async function callUnifiedCLI(query: string, showAllVariants: boolean = false, assetType?: string): Promise<any> {
   return new Promise((resolve, reject) => {
     const args = [CLI_WRAPPER_PATH, query];
     if (showAllVariants) {
       args.push('--show-all-variants');
+    }
+    if (assetType && assetType !== '' && assetType !== 'all') {
+      args.push('--asset-type', assetType);
     }
     const python = spawn('python3', args);
     let output = '';
@@ -150,7 +153,7 @@ export async function searchAssets(query: string, filters?: SimpleSearchFilters)
     
     // Call unified CLI search directly
     const showAllVariants = filters?.showAllVariants === true;
-    const cliResult = await callUnifiedCLI(query || '', showAllVariants);
+    const cliResult = await callUnifiedCLI(query || '', showAllVariants, filters?.assetType);
     
     // Transform CLI result to web format
     let assets = transformCLIResult(cliResult, showAllVariants);
