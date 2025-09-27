@@ -94,11 +94,11 @@ interface HeaderProps {
   isLoading?: boolean;
   initialQuery?: string;
   initialAssetType?: string;
-  showFullInventory?: boolean;
-  onToggleFullInventory?: (show: boolean) => void;
+  showAllVariants?: boolean;
+  onToggleShowAllVariants?: (show: boolean) => void;
 }
 
-export default function Header({ onSearch, isLoading = false, initialQuery = '', initialAssetType = 'logo', showFullInventory = false, onToggleFullInventory }: HeaderProps) {
+export default function Header({ onSearch, isLoading = false, initialQuery = '', initialAssetType = 'logo', showAllVariants = false, onToggleShowAllVariants }: HeaderProps) {
   const [query, setQuery] = useState(initialQuery);
   const [assetType, setAssetType] = useState(initialAssetType);
 
@@ -134,6 +134,14 @@ export default function Header({ onSearch, isLoading = false, initialQuery = '',
   };
 
   const handleAssetTypeChange = (value: string) => {
+    // Handle 'show-all-variants' option
+    if (value === 'show-all-variants') {
+      onToggleShowAllVariants?.(true);
+      // Don't change the actual asset type filter, keep current one
+      return;
+    }
+
+    // For normal asset type changes
     setAssetType(value);
     onSearch({
       query: query.trim(),
@@ -164,37 +172,6 @@ export default function Header({ onSearch, isLoading = false, initialQuery = '',
           </div>
         </div>
         <div className="content-stretch flex gap-2 sm:gap-4 lg:gap-6 items-center justify-start relative shrink-0" data-node-id="1:8979">
-          {/* Full Inventory Toggle */}
-          <div className="flex items-center gap-2 shrink-0">
-            <label className="flex items-center cursor-pointer" data-testid="full-inventory-toggle">
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={showFullInventory}
-                  onChange={(e) => onToggleFullInventory?.(e.target.checked)}
-                  disabled={isLoading}
-                  className="sr-only"
-                />
-                <div 
-                  className={`block w-10 h-6 rounded-full transition-colors cursor-pointer ${
-                    showFullInventory 
-                      ? 'bg-[#097049]' 
-                      : 'bg-[#373a41]'
-                  }`}
-                  onClick={() => onToggleFullInventory?.(!showFullInventory)}
-                >
-                  <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform pointer-events-none ${
-                    showFullInventory 
-                      ? 'transform translate-x-4' 
-                      : ''
-                  }`} />
-                </div>
-              </div>
-              <span className="ml-2 text-[#cecfd2] text-[12px] font-['Inter:Medium',_sans-serif] font-medium uppercase text-nowrap">
-                FULL INVENTORY
-              </span>
-            </label>
-          </div>
           <select
             value={assetType}
             onChange={(e) => handleAssetTypeChange(e.target.value)}
@@ -214,6 +191,7 @@ export default function Header({ onSearch, isLoading = false, initialQuery = '',
             <option value="">ALL TYPES</option>
             <option value="logo">LOGOS</option>
             <option value="document">SOLUTION BRIEF</option>
+            <option value="show-all-variants">SHOW ALL VARIANTS</option>
           </select>
           <div className="relative rounded-[8px] shrink-0 w-48 sm:w-64 lg:w-80 h-10 flex items-center" data-name="Input" data-node-id="1:7877" style={{ backgroundColor: 'var(--quantic-bg-primary)' }}>
             <div className="box-border content-stretch flex gap-2 items-center justify-start overflow-clip px-3 py-2 relative w-full h-full">

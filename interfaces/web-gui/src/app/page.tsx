@@ -16,9 +16,9 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
   const [currentFilters, setCurrentFilters] = useState<SearchFilters>({ query: '', assetType: 'logo' });
   const [initialFilters, setInitialFilters] = useState<SearchFilters>({ query: '', assetType: 'logo' });
-  const [showFullInventory, setShowFullInventory] = useState(false);
+  const [showAllVariants, setShowAllVariants] = useState(false);
 
-  const handleSearch = async (filters: SearchFilters, page: number = 1, append: boolean = false, useFullInventory?: boolean) => {
+  const handleSearch = async (filters: SearchFilters, page: number = 1, append: boolean = false, useShowAllVariants?: boolean) => {
     if (page === 1) {
       setIsLoading(true);
       setHasSearched(true);
@@ -35,7 +35,7 @@ export default function Home() {
       if (isDemoMode) {
         // Use client-side search for demo mode
         console.log('🎭 Using demo mode client-side search');
-        const demoResult = await demoSearchAssets(filters.query || '', useFullInventory ?? showFullInventory, filters.assetType);
+        const demoResult = await demoSearchAssets(filters.query || '', useShowAllVariants ?? showAllVariants, filters.assetType);
         data = {
           assets: demoResult.assets,
           total: demoResult.total,
@@ -48,7 +48,7 @@ export default function Home() {
         if (filters.query) params.set('query', filters.query);
         if (filters.fileType) params.set('fileType', filters.fileType);
         if (filters.assetType) params.set('assetType', filters.assetType);
-        if (useFullInventory ?? showFullInventory) params.set('showAllVariants', 'true');
+        if (useShowAllVariants ?? showAllVariants) params.set('showAllVariants', 'true');
         params.set('page', page.toString());
 
         const response = await fetch(`/api/search?${params.toString()}`);
@@ -130,9 +130,9 @@ export default function Home() {
     handleSearch(filters, 1, false);
   }, []);
 
-  // Handle full inventory toggle
-  const handleToggleFullInventory = useCallback((show: boolean) => {
-    setShowFullInventory(show);
+  // Handle show all variants toggle
+  const handleToggleShowAllVariants = useCallback((show: boolean) => {
+    setShowAllVariants(show);
     // Re-run current search with new setting immediately, passing the new value explicitly
     setCurrentPage(1);
     handleSearch(currentFilters, 1, false, show);
@@ -146,8 +146,8 @@ export default function Home() {
         isLoading={isLoading}
         initialQuery={initialFilters.query || ''}
         initialAssetType={initialFilters.assetType || ''}
-        showFullInventory={showFullInventory}
-        onToggleFullInventory={handleToggleFullInventory}
+        showAllVariants={showAllVariants}
+        onToggleShowAllVariants={handleToggleShowAllVariants}
       />
 
       {/* Main content */}

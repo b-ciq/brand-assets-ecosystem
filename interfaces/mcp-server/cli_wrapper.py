@@ -147,14 +147,14 @@ def enhanced_search(query: str, asset_data: Dict, patterns: Dict, show_all_varia
     if not show_all_variants and results:
         filtered_results = {}
         filtered_total = 0
-        
+
         for product, product_assets in results.items():
             filtered_assets = {}
-            
+
             # Always include documents (they are not variants of each other)
             documents = {k: v for k, v in product_assets.items() if v.get('type') == 'document'}
             filtered_assets.update(documents)
-            
+
             # For logos, find primary variant (horizontal layout preferred)
             logos = {k: v for k, v in product_assets.items() if v.get('type') != 'document'}
             if logos:
@@ -163,18 +163,18 @@ def enhanced_search(query: str, asset_data: Dict, patterns: Dict, show_all_varia
                     if asset_info.get('layout') == 'horizontal':
                         primary_logo_key = asset_key
                         break
-                
+
                 # Fallback to first logo if no horizontal found
                 if not primary_logo_key:
                     primary_logo_key = list(logos.keys())[0]
-                
+
                 if primary_logo_key:
                     filtered_assets[primary_logo_key] = logos[primary_logo_key]
-            
+
             if filtered_assets:
                 filtered_results[product] = filtered_assets
                 filtered_total += len(filtered_assets)
-        
+
         results = filtered_results
         total_found = filtered_total
     
