@@ -8,10 +8,18 @@ import { manipulateSvgColors, BRAND_COLORS } from '@/lib/svgColorTest';
 import { getVariantMetadata, getPrimaryVariant, isCIQCompanyLogo, getCIQVariantMetadata, getPrimaryCIQVariant } from '@/lib/productDefaults';
 import { SizeChoice, SIZE_PRESETS, DEFAULT_SIZE, getSizePixels, SIZE_LABELS, CUSTOM_SIZE_CONSTRAINTS, validateCustomSize } from '@/lib/sizeConstants';
 
+interface VariantConfig {
+  variant?: string;
+  colorMode?: 'light' | 'dark';
+  format?: 'svg' | 'png' | 'jpg';
+  size?: string;
+}
+
 interface DownloadModalProps {
   asset: Asset;
   isOpen: boolean;
   onClose: () => void;
+  variantConfig?: VariantConfig;
 }
 
 type ColorMode = 'light' | 'dark';
@@ -21,7 +29,7 @@ type AssetType = 'svg' | 'png' | 'jpg';
 // Width-based sizing system - now using centralized constants
 // S: 512px, M: 1024px, L: 2048px width with maintained aspect ratios
 
-export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadModalProps) {
+export default function DownloadModalNew({ asset, isOpen, onClose, variantConfig }: DownloadModalProps) {
   // Extract product name from asset for dynamic variant generation
   const getProductName = (asset: Asset): string => {
     // Try to get from brand first, then parse from ID
@@ -87,6 +95,58 @@ export default function DownloadModalNew({ asset, isOpen, onClose }: DownloadMod
       selectVariantByIndex(variants, selectedVariantIndex);
     }
   }, [colorMode, isOpen]); // Trigger when colorMode changes
+
+  // Pre-configure modal based on variant config from grid click
+  useEffect(() => {
+    if (isOpen && variantConfig) {
+      console.log('Pre-configuring modal with variant config:', variantConfig);
+
+      // Set color mode
+      if (variantConfig.colorMode) {
+        setColorMode(variantConfig.colorMode);
+      }
+
+      // Set asset type/format
+      if (variantConfig.format) {
+        setAssetType(variantConfig.format as AssetType);
+      }
+
+      // Set size
+      if (variantConfig.size) {
+        if (variantConfig.size === 'S' || variantConfig.size === 'M' || variantConfig.size === 'L') {
+          setSizeChoice(variantConfig.size);
+        } else {
+          setSizeChoice('Custom Width');
+          setCustomSize(variantConfig.size);
+        }
+      }
+
+      // Set variant - find the matching variant in the generated variants list
+      if (variantConfig.variant) {
+        // We need to wait for the color mode to be applied first, then select the variant
+        // This will be handled by a separate useEffect that runs after colorMode is set
+      }
+    }
+  }, [isOpen, variantConfig]);
+
+  // Handle variant selection after colorMode is applied (for pre-configuration)
+  useEffect(() => {
+    if (isOpen && variantConfig && variantConfig.variant) {
+      const variants = getDynamicVariants();
+      console.log('Looking for variant:', variantConfig.variant, 'in variants:', variants.map(v => v.id));
+
+      // Find the index of the requested variant
+      const variantIndex = variants.findIndex(v => v.id === variantConfig.variant);
+
+      if (variantIndex >= 0) {
+        console.log('Found variant at index:', variantIndex, 'selecting variant:', variants[variantIndex].id);
+        setSelectedVariant(variants[variantIndex].id);
+        setSelectedVariantIndex(variantIndex);
+      } else {
+        console.log('Requested variant not found, available variants:', variants.map(v => v.id));
+      }
+    }
+  }, [isOpen, variantConfig, colorMode]); // Run after colorMode changes to ensure variants are updated
 
   // Generate dynamic variants based on asset type
   const getDynamicVariants = () => {

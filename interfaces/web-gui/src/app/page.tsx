@@ -7,6 +7,16 @@ import AssetGrid from '@/components/AssetGrid';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { demoSearchAssets } from '@/lib/demoSearchService';
 
+// Variant configuration interface for URL parameters
+interface VariantConfig {
+  product: string;
+  variant?: 'horizontal' | 'vertical' | 'symbol' | '1-color' | '2-color';
+  colorMode?: 'light' | 'dark';
+  format?: 'svg' | 'png' | 'jpg';
+  size?: string;
+  openModal?: boolean;
+}
+
 export default function Home() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,9 +26,12 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
   const [currentFilters, setCurrentFilters] = useState<SearchFilters>({ query: '', assetType: 'logo' });
   const [initialFilters, setInitialFilters] = useState<SearchFilters>({ query: '', assetType: 'logo' });
-  const [showFullInventory, setShowFullInventory] = useState(false);
+  const [showAllVariants, setShowAllVariants] = useState(false);
 
-  const handleSearch = async (filters: SearchFilters, page: number = 1, append: boolean = false, useFullInventory?: boolean) => {
+  // NEW: Variant configuration state for modal pre-configuration
+  const [variantConfig, setVariantConfig] = useState<VariantConfig | null>(null);
+
+  const handleSearch = async (filters: SearchFilters, page: number = 1, append: boolean = false, useShowAllVariants?: boolean) => {
     if (page === 1) {
       setIsLoading(true);
       setHasSearched(true);
@@ -35,7 +48,7 @@ export default function Home() {
       if (isDemoMode) {
         // Use client-side search for demo mode
         console.log('🎭 Using demo mode client-side search');
-        const demoResult = await demoSearchAssets(filters.query || '', useFullInventory ?? showFullInventory, filters.assetType);
+        const demoResult = await demoSearchAssets(filters.query || '', useShowAllVariants ?? showAllVariants, filters.assetType);
         data = {
           assets: demoResult.assets,
           total: demoResult.total,
@@ -48,7 +61,7 @@ export default function Home() {
         if (filters.query) params.set('query', filters.query);
         if (filters.fileType) params.set('fileType', filters.fileType);
         if (filters.assetType) params.set('assetType', filters.assetType);
-        if (useFullInventory ?? showFullInventory) params.set('showAllVariants', 'true');
+        if (useShowAllVariants ?? showAllVariants) params.set('showAllVariants', 'true');
         params.set('page', page.toString());
 
         const response = await fetch(`/api/search?${params.toString()}`);
@@ -84,18 +97,37 @@ export default function Home() {
     const query = urlParams.get('query');
     const fileType = urlParams.get('fileType');
     const assetType = urlParams.get('assetType');
-    
+
+    // NEW: Parse variant configuration parameters
+    const product = urlParams.get('product');
+    const variant = urlParams.get('variant');
+    const colorMode = urlParams.get('colorMode');
+    const format = urlParams.get('format');
+    const size = urlParams.get('size');
+    const openModal = urlParams.get('openModal');
+
     // Build initial filters from URL parameters (with logo as default)
     const initialFilters: SearchFilters = {
-      query: query || '',
+      query: product || query || '',
       fileType: fileType || undefined,
       assetType: assetType || 'logo',
     };
-    
-    
+
+    // Store variant configuration for modal pre-configuration
+    if (product && (variant || colorMode || format || size)) {
+      setVariantConfig({
+        product,
+        variant: variant as any,
+        colorMode: colorMode as any,
+        format: format as any,
+        size: size || undefined,
+        openModal: openModal === 'true'
+      });
+    }
+
     // Execute search (empty query will show all assets)
     handleSearch(initialFilters);
-    
+
     // Update current filters state to match URL
     setCurrentFilters(initialFilters);
     // Store initial filters for Header component
@@ -119,9 +151,13 @@ export default function Home() {
     threshold: 300
   });
 
-  const handleAssetClick = (asset: Asset) => {
-    // TODO: Open asset preview modal
-    console.log('Asset clicked:', asset);
+  const handleAssetClick = (asset: Asset, clickVariantConfig?: VariantConfig) => {
+    // Use clickVariantConfig if provided (from grid variant click), otherwise use URL-based variantConfig
+    const configToUse = clickVariantConfig || variantConfig;
+
+    console.log('Asset clicked:', asset, 'with variant config:', configToUse);
+    // TODO: Open modal with pre-configuration
+    // This will be implemented when we update the modal system
   };
 
   // Handle new search (reset pagination)
@@ -130,9 +166,9 @@ export default function Home() {
     handleSearch(filters, 1, false);
   }, []);
 
-  // Handle full inventory toggle
-  const handleToggleFullInventory = useCallback((show: boolean) => {
-    setShowFullInventory(show);
+  // Handle show all variants toggle
+  const handleToggleShowAllVariants = useCallback((show: boolean) => {
+    setShowAllVariants(show);
     // Re-run current search with new setting immediately, passing the new value explicitly
     setCurrentPage(1);
     handleSearch(currentFilters, 1, false, show);
@@ -146,8 +182,8 @@ export default function Home() {
         isLoading={isLoading}
         initialQuery={initialFilters.query || ''}
         initialAssetType={initialFilters.assetType || ''}
-        showFullInventory={showFullInventory}
-        onToggleFullInventory={handleToggleFullInventory}
+        showAllVariants={showAllVariants}
+        onToggleShowAllVariants={handleToggleShowAllVariants}
       />
 
       {/* Main content */}
@@ -155,12 +191,14 @@ export default function Home() {
 
         {hasSearched && (
           <div className="mt-8">
-            <AssetGrid 
-              assets={assets} 
+            <AssetGrid
+              assets={assets}
               isLoading={isLoading}
               isLoadingMore={isLoadingMore}
               hasMore={hasMore}
               onAssetClick={handleAssetClick}
+              showVariantGrid={showAllVariants}
+              variantConfig={variantConfig}
             />
           </div>
         )}

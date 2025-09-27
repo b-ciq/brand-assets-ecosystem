@@ -23,29 +23,36 @@ export interface Asset {
   metadata?: {
     // Universal mode field - what background the logo is designed for
     backgroundMode?: 'light' | 'dark'; // 'light' = dark logo for light backgrounds, 'dark' = light logo for dark backgrounds
-    
+
     // Company logos (CIQ) specific
     colorVariant?: '1-color' | '2-color';
-    
-    // Product logos (Fuzzball, etc.) specific  
+
+    // Product logos (Fuzzball, etc.) specific
     variant?: 'horizontal' | 'vertical' | 'symbol';
-    
+
     // Legacy fields (will migrate away from these)
     background?: string; // DEPRECATED: use backgroundMode
     color?: string;
     layout?: string;
     size?: string;
-    
+
     // Universal fields
     isPrimary?: boolean; // True for the recommended default download
     usageContext?: string; // "presentations", "headers", "favicons", etc.
-    
+
     // Future asset types
     colorCode?: string; // For color palette assets
-    fontFamily?: string; // For font assets  
+    fontFamily?: string; // For font assets
     documentType?: 'solution-brief' | 'datasheet' | 'guide'; // For PDF assets
     pages?: number; // For document assets
     fileSize?: string; // For all assets
+  };
+
+  // NEW: Variant metadata for grid variant expansion
+  variantMetadata?: {
+    product: string;
+    variant?: string;
+    colorMode?: string;
   };
 }
 

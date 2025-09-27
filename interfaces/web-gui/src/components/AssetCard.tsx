@@ -8,13 +8,22 @@ import DocumentPreviewModal from './DocumentPreviewModal';
 import { QuickDownloadService } from '@/lib/quickDownload';
 import { getProductDefaults, getQuickDownloadDescription } from '@/lib/productDefaults';
 import { getAssetHandler } from '@/lib/assetDisplayHandlers';
+import { manipulateSvgColors } from '@/lib/svgColorTest';
+
+interface VariantConfig {
+  variant?: string;
+  colorMode?: 'light' | 'dark';
+  format?: 'svg' | 'png' | 'jpg';
+  size?: string;
+}
 
 interface AssetCardProps {
   asset: Asset;
   onClick?: () => void;
+  variantConfig?: VariantConfig;
 }
 
-export default function AssetCard({ asset, onClick }: AssetCardProps) {
+export default function AssetCard({ asset, onClick, variantConfig }: AssetCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [shouldLoadImage, setShouldLoadImage] = useState(false);
@@ -22,7 +31,12 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
   const [isQuickDownloading, setIsQuickDownloading] = useState(false);
   const [quickDownloadError, setQuickDownloadError] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // Check if this is a variant asset with color mode specification
+  const isVariantAsset = asset.variantMetadata?.colorMode;
+  const variantColorMode = asset.variantMetadata?.colorMode;
   
   // Get asset-specific display handler
   const handler = getAssetHandler(asset.assetType || 'logo');
@@ -57,6 +71,34 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
     return () => observer.disconnect();
   }, []);
 
+  // Process SVG for variant color modes
+  useEffect(() => {
+    const processVariantImage = async () => {
+      if (!shouldLoadImage || !isVariantAsset || asset.assetType !== 'logo') {
+        return;
+      }
+
+      try {
+        const imageUrl = asset.thumbnailUrl || asset.url;
+        const response = await fetch(imageUrl);
+        const svgContent = await response.text();
+
+        // Apply color transformation based on variant
+        const targetColor = variantColorMode === 'dark' ? '#FFFFFF' : '#000000';
+        const processedSvg = manipulateSvgColors(svgContent, targetColor);
+        const dataUrl = `data:image/svg+xml;base64,${btoa(processedSvg)}`;
+
+        setProcessedImageUrl(dataUrl);
+      } catch (error) {
+        console.error('Failed to process variant image:', error);
+        // Fall back to original image
+        setProcessedImageUrl(null);
+      }
+    };
+
+    processVariantImage();
+  }, [shouldLoadImage, isVariantAsset, variantColorMode, asset.thumbnailUrl, asset.url, asset.assetType]);
+
   // Theme observer for background updates
   useEffect(() => {
     const checkTheme = () => {
@@ -83,8 +125,15 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
     return () => observer.disconnect();
   }, []);
 
-  // Determine background color based on asset type and theme
+  // Determine background color based on asset type, theme, and variant
   const getImageBackground = () => {
+    // For variant assets, use contrasting background to make the logo visible
+    if (isVariantAsset && variantColorMode) {
+      // Dark variant logos (white) need dark background
+      // Light variant logos (black) need light background
+      return variantColorMode === 'dark' ? '#1a1a1a' : '#f8f9fa';
+    }
+
     if (asset.fileType.toLowerCase() === 'jpeg' || asset.fileType.toLowerCase() === 'jpg') {
       // For JPEG assets: white background for light mode, dark background for dark mode
       // Use actual Quantic colors directly to avoid CSS variable resolution issues
@@ -157,7 +206,7 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
               </div>
             )}
             <img
-              src={asset.thumbnailUrl || asset.url}
+              src={processedImageUrl || asset.thumbnailUrl || asset.url}
               alt={asset.title}
               className={`max-w-full transition-opacity duration-200 ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
@@ -259,10 +308,11 @@ export default function AssetCard({ asset, onClick }: AssetCardProps) {
           onClose={() => setShowDownloadModal(false)}
         />
       ) : (
-        <DownloadModalNew 
+        <DownloadModalNew
           asset={asset}
           isOpen={showDownloadModal}
           onClose={() => setShowDownloadModal(false)}
+          variantConfig={variantConfig}
         />
       )}
     </div>
