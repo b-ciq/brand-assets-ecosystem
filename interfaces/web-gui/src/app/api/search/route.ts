@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchAssets, SimpleSearchFilters } from '@/lib/brandAssetsService';
 
+// Configure for static export in demo mode
+export const dynamic = 'force-static';
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const query = searchParams.get('query') || '';

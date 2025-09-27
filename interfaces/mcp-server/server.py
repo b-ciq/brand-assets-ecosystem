@@ -62,8 +62,8 @@ def find_logo(product_name: str, variant: str = "", color_mode: str = "", format
     # Extract resolved product name from results
     first_product = list(result["assets"].keys())[0]
 
-    # Generate web GUI URL - use localhost for development, deployment URL for production
-    base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3000')
+    # Generate web GUI URL - use environment variable or default to production
+    base_url = os.getenv('WEB_GUI_URL', 'https://lighthearted-fenglisu-f8b66c.netlify.app')
 
     # Build variant URL parameters
     url_params = [f"product={first_product.lower()}"]
