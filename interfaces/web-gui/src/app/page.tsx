@@ -7,6 +7,16 @@ import AssetGrid from '@/components/AssetGrid';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { demoSearchAssets } from '@/lib/demoSearchService';
 
+// Variant configuration interface for URL parameters
+interface VariantConfig {
+  product: string;
+  variant?: 'horizontal' | 'vertical' | 'symbol' | '1-color' | '2-color';
+  colorMode?: 'light' | 'dark';
+  format?: 'svg' | 'png' | 'jpg';
+  size?: string;
+  openModal?: boolean;
+}
+
 export default function Home() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -17,6 +27,9 @@ export default function Home() {
   const [currentFilters, setCurrentFilters] = useState<SearchFilters>({ query: '', assetType: 'logo' });
   const [initialFilters, setInitialFilters] = useState<SearchFilters>({ query: '', assetType: 'logo' });
   const [showAllVariants, setShowAllVariants] = useState(false);
+
+  // NEW: Variant configuration state for modal pre-configuration
+  const [variantConfig, setVariantConfig] = useState<VariantConfig | null>(null);
 
   const handleSearch = async (filters: SearchFilters, page: number = 1, append: boolean = false, useShowAllVariants?: boolean) => {
     if (page === 1) {
@@ -84,18 +97,37 @@ export default function Home() {
     const query = urlParams.get('query');
     const fileType = urlParams.get('fileType');
     const assetType = urlParams.get('assetType');
-    
+
+    // NEW: Parse variant configuration parameters
+    const product = urlParams.get('product');
+    const variant = urlParams.get('variant');
+    const colorMode = urlParams.get('colorMode');
+    const format = urlParams.get('format');
+    const size = urlParams.get('size');
+    const openModal = urlParams.get('openModal');
+
     // Build initial filters from URL parameters (with logo as default)
     const initialFilters: SearchFilters = {
-      query: query || '',
+      query: product || query || '',
       fileType: fileType || undefined,
       assetType: assetType || 'logo',
     };
-    
-    
+
+    // Store variant configuration for modal pre-configuration
+    if (product && (variant || colorMode || format || size)) {
+      setVariantConfig({
+        product,
+        variant: variant as any,
+        colorMode: colorMode as any,
+        format: format as any,
+        size: size || undefined,
+        openModal: openModal === 'true'
+      });
+    }
+
     // Execute search (empty query will show all assets)
     handleSearch(initialFilters);
-    
+
     // Update current filters state to match URL
     setCurrentFilters(initialFilters);
     // Store initial filters for Header component
@@ -119,9 +151,13 @@ export default function Home() {
     threshold: 300
   });
 
-  const handleAssetClick = (asset: Asset) => {
-    // TODO: Open asset preview modal
-    console.log('Asset clicked:', asset);
+  const handleAssetClick = (asset: Asset, clickVariantConfig?: VariantConfig) => {
+    // Use clickVariantConfig if provided (from grid variant click), otherwise use URL-based variantConfig
+    const configToUse = clickVariantConfig || variantConfig;
+
+    console.log('Asset clicked:', asset, 'with variant config:', configToUse);
+    // TODO: Open modal with pre-configuration
+    // This will be implemented when we update the modal system
   };
 
   // Handle new search (reset pagination)
@@ -155,12 +191,14 @@ export default function Home() {
 
         {hasSearched && (
           <div className="mt-8">
-            <AssetGrid 
-              assets={assets} 
+            <AssetGrid
+              assets={assets}
               isLoading={isLoading}
               isLoadingMore={isLoadingMore}
               hasMore={hasMore}
               onAssetClick={handleAssetClick}
+              showVariantGrid={showAllVariants}
+              variantConfig={variantConfig}
             />
           </div>
         )}

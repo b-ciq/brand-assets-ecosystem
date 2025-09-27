@@ -33,37 +33,78 @@ def call_unified_cli(query: str) -> dict:
         return {"error": f"Failed to search: {e}"}
 
 @mcp.tool()
-def find_logo(product_name: str) -> str:
+def find_logo(product_name: str, variant: str = "", color_mode: str = "", format: str = "", size: str = "") -> str:
     """
-    Find a product logo and return a direct link to the web interface.
-    
+    Find a product logo with optional specific variant configuration.
+
+    Args:
+        product_name: Product name (fuzzball, warewulf, ascender, rlc-hardened, ciq, etc.)
+        variant: Logo variant (horizontal, vertical, symbol) or (1-color, 2-color) for CIQ
+        color_mode: Color mode (light, dark)
+        format: File format (svg, png, jpg)
+        size: Size (S, M, L or custom like "1024px")
+
     Available products: apptainer, fuzzball, warewulf, ascender, rlc-hardened, rlc-ai, ciq
     Also accepts: app, fuzz, war, asc, roc, ai (will be resolved to full product names)
-    
-    Returns a simple message with a direct web interface link for logo download.
+
+    Returns a direct link to the web interface with specific variant configuration.
     """
-    
-    # Search using unified CLI backend
+
+    # Search using unified CLI backend to validate product
     result = call_unified_cli(product_name)
-    
+
     if "error" in result:
         return f"Sorry, I couldn't find any logos for '{product_name}'. Available products: apptainer, fuzzball, warewulf, ascender, rlc-hardened, rlc-ai, ciq"
-    
+
     if result.get("total_found", 0) == 0:
         return f"No logos found for '{product_name}'. Available products: apptainer, fuzzball, warewulf, ascender, rlc-hardened, rlc-ai, ciq"
-    
-    # Generate web GUI URL - use public deployment by default
-    base_url = os.getenv('WEB_GUI_URL', 'https://lighthearted-fenglisu-f8b66c.netlify.app')
-    web_url = f"{base_url}?query={product_name.replace(' ', '+')}"
-    
-    # Extract first product name for response
+
+    # Extract resolved product name from results
     first_product = list(result["assets"].keys())[0]
-    total = result["total_found"]
-    
-    if total == 1:
-        return f"Here's the {first_product.upper()} logo: {web_url}"
+
+    # Generate web GUI URL - use localhost for development, deployment URL for production
+    base_url = os.getenv('WEB_GUI_URL', 'http://localhost:3000')
+
+    # Build variant URL parameters
+    url_params = [f"product={first_product.lower()}"]
+
+    if variant:
+        url_params.append(f"variant={variant}")
+    if color_mode:
+        url_params.append(f"colorMode={color_mode}")
+    if format:
+        url_params.append(f"format={format}")
+    if size:
+        url_params.append(f"size={size}")
+
+    # Always add openModal=true if any specific variant is requested
+    if variant or color_mode or format or size:
+        url_params.append("openModal=true")
+        web_url = f"{base_url}?{'&'.join(url_params)}"
+
+        # Generate descriptive response for specific variant
+        variant_desc = []
+        if variant:
+            variant_desc.append(variant)
+        if color_mode:
+            variant_desc.append(f"{color_mode} mode")
+        if format:
+            variant_desc.append(format.upper())
+        if size:
+            variant_desc.append(f"{size} size" if size in ['S', 'M', 'L'] else size)
+
+        desc = " ".join(variant_desc) if variant_desc else "configured"
+        return f"Here's the {first_product.upper()} logo ({desc}): {web_url}"
+
     else:
-        return f"Found {total} {first_product.upper()} logo variants: {web_url}"
+        # Default search URL
+        web_url = f"{base_url}?query={product_name.replace(' ', '+')}"
+        total = result["total_found"]
+
+        if total == 1:
+            return f"Here's the {first_product.upper()} logo: {web_url}"
+        else:
+            return f"Found {total} {first_product.upper()} logo variants: {web_url}"
 
 # Server startup
 if __name__ == "__main__":
