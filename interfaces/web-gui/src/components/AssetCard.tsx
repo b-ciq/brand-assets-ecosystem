@@ -22,9 +22,10 @@ interface AssetCardProps {
   onClick?: () => void;
   variantConfig?: VariantConfig;
   autoOpenModal?: boolean;
+  onModalClose?: () => void;
 }
 
-export default function AssetCard({ asset, onClick, variantConfig, autoOpenModal = false }: AssetCardProps) {
+export default function AssetCard({ asset, onClick, variantConfig, autoOpenModal = false, onModalClose }: AssetCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [shouldLoadImage, setShouldLoadImage] = useState(false);
@@ -43,11 +44,17 @@ export default function AssetCard({ asset, onClick, variantConfig, autoOpenModal
   // Get asset-specific display handler
   const handler = getAssetHandler(asset.assetType || 'logo');
   const imageConstraints = handler.getImageConstraints();
-  const cardText = handler.getCardText(asset);
+  const cardText = handler.getCardText(asset, variantConfig);
   
   // Simple product defaults - no complexity
   const productDefaults = getProductDefaults(asset.id);
   const quickDescription = getQuickDownloadDescription(asset.id);
+
+  // Custom modal close handler that also calls parent's onModalClose
+  const handleModalClose = () => {
+    setShowDownloadModal(false);
+    onModalClose?.();
+  };
 
   // Intersection Observer for lazy loading
   useEffect(() => {
@@ -313,16 +320,16 @@ export default function AssetCard({ asset, onClick, variantConfig, autoOpenModal
 
       {/* Download Modal - Asset type specific */}
       {asset.assetType === 'document' ? (
-        <DocumentPreviewModal 
+        <DocumentPreviewModal
           asset={asset}
           isOpen={showDownloadModal}
-          onClose={() => setShowDownloadModal(false)}
+          onClose={handleModalClose}
         />
       ) : (
         <DownloadModalNew
           asset={asset}
           isOpen={showDownloadModal}
-          onClose={() => setShowDownloadModal(false)}
+          onClose={handleModalClose}
           variantConfig={variantConfig}
         />
       )}
