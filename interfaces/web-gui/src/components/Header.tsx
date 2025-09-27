@@ -19,6 +19,7 @@ interface HeaderProps {
   initialAssetType?: string;
   showAllVariants?: boolean;
   onToggleShowAllVariants?: (show: boolean) => void;
+  onCompleteSearchClear?: () => void;
 }
 
 export default function Header({
@@ -27,7 +28,8 @@ export default function Header({
   initialQuery = '',
   initialAssetType = 'logo',
   showAllVariants = false,
-  onToggleShowAllVariants
+  onToggleShowAllVariants,
+  onCompleteSearchClear
 }: HeaderProps) {
   const [query, setQuery] = useState(initialQuery);
   const [assetType, setAssetType] = useState(initialAssetType);
@@ -85,12 +87,17 @@ export default function Header({
 
   const handleClearSearch = () => {
     setQuery('');
-    // Map "all" to empty string for API
-    const apiAssetType = assetType === 'all' ? '' : assetType;
-    onSearch({
-      query: '',
-      assetType: apiAssetType || undefined,
-    });
+    // Call the complete search clear handler to clean URL parameters
+    if (onCompleteSearchClear) {
+      onCompleteSearchClear();
+    } else {
+      // Fallback to regular search if handler not provided
+      const apiAssetType = assetType === 'all' ? '' : assetType;
+      onSearch({
+        query: '',
+        assetType: apiAssetType || undefined,
+      });
+    }
   };
 
   // Get display label for asset type

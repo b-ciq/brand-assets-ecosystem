@@ -17,6 +17,33 @@ interface VariantConfig {
   openModal?: boolean;
 }
 
+// URL state management utilities
+const clearUrlParameters = () => {
+  if (typeof window !== 'undefined') {
+    const url = new URL(window.location.href);
+    url.search = '';
+    window.history.replaceState({}, '', url.toString());
+  }
+};
+
+const clearVariantUrlParameters = () => {
+  if (typeof window !== 'undefined') {
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+
+    // Remove variant-specific parameters but keep search-related ones
+    params.delete('product');
+    params.delete('variant');
+    params.delete('colorMode');
+    params.delete('format');
+    params.delete('size');
+    params.delete('openModal');
+
+    url.search = params.toString();
+    window.history.replaceState({}, '', url.toString());
+  }
+};
+
 export default function Home() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +57,22 @@ export default function Home() {
 
   // NEW: Variant configuration state for modal pre-configuration
   const [variantConfig, setVariantConfig] = useState<VariantConfig | null>(null);
+
+  // Handle modal close - clear URL parameters and variant config
+  const handleModalClose = useCallback(() => {
+    clearVariantUrlParameters();
+    setVariantConfig(null);
+  }, []);
+
+  // Handle complete search clear - clear all URL parameters and reset state
+  const handleCompleteSearchClear = useCallback(() => {
+    clearUrlParameters();
+    setVariantConfig(null);
+    const newFilters = { query: '', assetType: 'logo' };
+    setCurrentFilters(newFilters);
+    // Perform the search with cleared state
+    handleSearch(newFilters, 1, false);
+  }, []);
 
   const handleSearch = async (filters: SearchFilters, page: number = 1, append: boolean = false, useShowAllVariants?: boolean) => {
     if (page === 1) {
@@ -193,13 +236,14 @@ export default function Home() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--quantic-bg-primary)' }}>
       {/* Header */}
-      <Header 
-        onSearch={handleNewSearch} 
+      <Header
+        onSearch={handleNewSearch}
         isLoading={isLoading}
         initialQuery={initialFilters.query || ''}
         initialAssetType={initialFilters.assetType || ''}
         showAllVariants={showAllVariants}
         onToggleShowAllVariants={handleToggleShowAllVariants}
+        onCompleteSearchClear={handleCompleteSearchClear}
       />
 
       {/* Main content */}
@@ -216,6 +260,7 @@ export default function Home() {
               showVariantGrid={showAllVariants}
               variantConfig={variantConfig}
               autoOpenModal={variantConfig?.openModal && !isLoading}
+              onModalClose={handleModalClose}
             />
           </div>
         )}

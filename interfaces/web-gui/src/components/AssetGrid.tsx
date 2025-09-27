@@ -24,6 +24,7 @@ interface AssetGridProps {
   showVariantGrid?: boolean;
   variantConfig?: VariantConfig | null;
   autoOpenModal?: boolean;
+  onModalClose?: () => void;
 }
 
 export default function AssetGrid({
@@ -34,7 +35,8 @@ export default function AssetGrid({
   onAssetClick,
   showVariantGrid = false,
   variantConfig,
-  autoOpenModal = false
+  autoOpenModal = false,
+  onModalClose
 }: AssetGridProps) {
   // Generate expanded variants for grid display when showVariantGrid is enabled
   const generateVariantAssets = (baseAssets: Asset[]): Asset[] => {
@@ -60,22 +62,28 @@ export default function AssetGrid({
       const colorModes: ('light' | 'dark')[] = ['light', 'dark'];
 
       if (isCIQCompanyLogo(productName)) {
-        // CIQ: 2 color variants × 2 background modes = 4 variants
-        const ciqVariants = getCIQVariantMetadata();
+        // CIQ: CLI backend now provides all 4 variants with colorVariant metadata
+        // Use them directly instead of expanding from single asset
+        const colorVariant = asset.metadata?.colorVariant || (asset.id.includes('2color') ? '2-color' : '1-color');
+        const backgroundMode = asset.metadata?.background || (asset.id.includes('dark') ? 'dark' : 'light');
 
-        ciqVariants.forEach((variant, index) => {
-          expandedAssets.push({
-            ...asset,
-            id: `${asset.id}-${variant.colorVariant}-${variant.backgroundMode}`,
-            displayName: variant.displayName,
-            description: variant.usageContext,
-            // Store variant config for click handling
-            variantMetadata: {
-              product: productName,
-              variant: variant.colorVariant,
-              colorMode: variant.backgroundMode
-            }
-          });
+        // Generate proper display name based on actual variant data
+        const displayName = `CIQ ${colorVariant === '1-color' ? 'Standard' : 'Hero'} ${backgroundMode === 'light' ? 'Light' : 'Dark'} Mode`;
+        const usageContext = colorVariant === '1-color'
+          ? (backgroundMode === 'light' ? 'general business use, presentations' : 'dark backgrounds, headers')
+          : (backgroundMode === 'light' ? 'major presentations, marketing materials' : 'dark hero sections, premium contexts');
+
+        expandedAssets.push({
+          ...asset,
+          id: `${asset.id}-variant`,
+          displayName: displayName,
+          description: usageContext,
+          // Store variant config for click handling
+          variantMetadata: {
+            product: productName,
+            variant: colorVariant,
+            colorMode: backgroundMode
+          }
         });
       } else {
         // Product logos: Backend already provides orientation variants,
@@ -181,6 +189,7 @@ export default function AssetGrid({
               onClick={handleClick}
               variantConfig={configForAsset}
               autoOpenModal={shouldAutoOpen}
+              onModalClose={onModalClose}
             />
           );
         })}

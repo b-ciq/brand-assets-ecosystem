@@ -106,22 +106,27 @@ function transformCLIResult(cliResult: any, showAllVariants: boolean = false): A
           }
         });
       } else {
-        // Handle logo assets - don't create artificial light/dark variants
+        // Handle logo assets - distinguish between CIQ and product logos
+        const isCIQ = product.toLowerCase() === 'ciq';
+        const assetId = isCIQ ? `${product}-${assetKey}` : `${product}-${asset.layout}`;
+
         assets.push({
-          id: `${product}-${asset.layout}`,
+          id: assetId,
           title: asset.filename?.replace(/\.[^/.]+$/, "") || "Unknown Asset",
           displayName: `${product.toUpperCase()} Logo`,
-          description: `${product} ${asset.type} - ${asset.layout}`,
+          description: `${product} ${asset.type} - ${isCIQ ? asset.colorVariant + ' ' + asset.background : asset.layout}`,
           url: asset.url, // Use URL as-is (relative path)
           thumbnailUrl: asset.url,
           fileType: asset.filename ? asset.filename.split('.').pop()?.toLowerCase() || 'svg' : 'svg',
           dimensions: { width: 100, height: 100 },
           tags: asset.tags || [],
           brand: product.toUpperCase(),
-          category: 'product-logo',
+          category: isCIQ ? 'company-logo' : 'product-logo',
           assetType: 'logo',
           metadata: {
-            variant: asset.layout,
+            variant: isCIQ ? asset.colorVariant : asset.layout,
+            colorVariant: isCIQ ? asset.colorVariant : undefined,
+            background: isCIQ ? asset.background : undefined,
             isPrimary: true, // CLI backend returns primary variants
             usageContext: 'general use'
           }
