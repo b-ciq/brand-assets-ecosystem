@@ -114,7 +114,7 @@ export default function Home() {
     };
 
     // Store variant configuration for modal pre-configuration
-    if (product && (variant || colorMode || format || size)) {
+    if (product && (variant || colorMode || format || size || openModal === 'true')) {
       setVariantConfig({
         product,
         variant: variant as any,
@@ -133,6 +133,23 @@ export default function Home() {
     // Store initial filters for Header component
     setInitialFilters(initialFilters);
   }, []);
+
+  // Auto-open modal when assets are loaded and openModal=true
+  useEffect(() => {
+    if (variantConfig?.openModal && assets.length > 0 && !isLoading) {
+      // Find the matching asset for the specified product
+      const targetAsset = assets.find(asset => {
+        const assetProduct = asset.brand?.toLowerCase() || asset.id.split('-')[0];
+        return assetProduct === variantConfig.product.toLowerCase();
+      });
+
+      if (targetAsset) {
+        console.log('Auto-opening modal for asset:', targetAsset, 'with config:', variantConfig);
+        // Find the AssetCard and trigger click programmatically
+        // We'll pass this as a flag to AssetGrid to handle auto-opening
+      }
+    }
+  }, [assets, variantConfig, isLoading]);
 
   // Load more function for infinite scroll
   const loadMore = useCallback(() => {
@@ -156,8 +173,7 @@ export default function Home() {
     const configToUse = clickVariantConfig || variantConfig;
 
     console.log('Asset clicked:', asset, 'with variant config:', configToUse);
-    // TODO: Open modal with pre-configuration
-    // This will be implemented when we update the modal system
+    // This will be handled by AssetCard/AssetGrid modal systems
   };
 
   // Handle new search (reset pagination)
@@ -199,6 +215,7 @@ export default function Home() {
               onAssetClick={handleAssetClick}
               showVariantGrid={showAllVariants}
               variantConfig={variantConfig}
+              autoOpenModal={variantConfig?.openModal && !isLoading}
             />
           </div>
         )}

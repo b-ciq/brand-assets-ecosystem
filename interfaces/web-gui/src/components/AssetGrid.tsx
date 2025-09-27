@@ -23,6 +23,7 @@ interface AssetGridProps {
   onAssetClick?: (asset: Asset, variantConfig?: VariantConfig) => void;
   showVariantGrid?: boolean;
   variantConfig?: VariantConfig | null;
+  autoOpenModal?: boolean;
 }
 
 export default function AssetGrid({
@@ -32,7 +33,8 @@ export default function AssetGrid({
   hasMore = false,
   onAssetClick,
   showVariantGrid = false,
-  variantConfig
+  variantConfig,
+  autoOpenModal = false
 }: AssetGridProps) {
   // Generate expanded variants for grid display when showVariantGrid is enabled
   const generateVariantAssets = (baseAssets: Asset[]): Asset[] => {
@@ -161,12 +163,24 @@ export default function AssetGrid({
             }
           };
 
+          // Check if this asset should auto-open modal (only first matching asset)
+          const shouldAutoOpen = autoOpenModal && variantConfig &&
+            variantConfig.product.toLowerCase() === (asset.brand?.toLowerCase() || asset.id.split('-')[0]) &&
+            // Only the first matching asset should auto-open
+            displayAssets.findIndex(a =>
+              variantConfig.product.toLowerCase() === (a.brand?.toLowerCase() || a.id.split('-')[0])
+            ) === displayAssets.indexOf(asset);
+
+          // For URL-based variant config, pass the URL config to the matching asset
+          const configForAsset = shouldAutoOpen ? variantConfig : asset.variantMetadata;
+
           return (
             <AssetCard
               key={asset.id}
               asset={asset}
               onClick={handleClick}
-              variantConfig={asset.variantMetadata}
+              variantConfig={configForAsset}
+              autoOpenModal={shouldAutoOpen}
             />
           );
         })}
