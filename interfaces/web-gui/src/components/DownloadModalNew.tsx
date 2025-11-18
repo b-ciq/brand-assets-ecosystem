@@ -152,17 +152,17 @@ export default function DownloadModalNew({ asset, isOpen, onClose, variantConfig
   // Generate dynamic variants based on asset type
   const getDynamicVariants = () => {
     if (isCIQLogo) {
-      // CIQ company logo variants: show 1-color and 2-color for current mode
+      // CIQ company logo variants: show 1-color variants for current mode
       const ciqVariants = getCIQVariantMetadata();
       const currentModeVariants = ciqVariants.filter(variant => 
         variant.backgroundMode === colorMode
       );
       
       return currentModeVariants.map(variant => {
-        const filename = `CIQ_logo_${variant.colorVariant === '1-color' ? '1clr' : '2clr'}_${variant.backgroundMode}mode.svg`;
-        
+        const filename = `CIQ_logo_1clr_${variant.backgroundMode}mode.svg`;
+
         return {
-          id: variant.colorVariant, // Use color variant as ID (1-color or 2-color)
+          id: variant.colorVariant, // Will always be '1-color' now
           displayName: variant.displayName.replace(` (${variant.backgroundMode === 'dark' ? 'Dark' : ''})`, ''), // Clean name
           aspectRatio: 'aspect-square', // Square thumbnails
           logoPath: `/assets/global/CIQ_logos/${filename}`
