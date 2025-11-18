@@ -62,16 +62,16 @@ export default function AssetGrid({
       const colorModes: ('light' | 'dark')[] = ['light', 'dark'];
 
       if (isCIQCompanyLogo(productName)) {
-        // CIQ: CLI backend now provides all 4 variants with colorVariant metadata
+        // CIQ: CLI backend now provides only 1-color variants
         // Use them directly instead of expanding from single asset
-        const colorVariant = asset.metadata?.colorVariant || (asset.id.includes('2color') ? '2-color' : '1-color');
+        const colorVariant = asset.metadata?.colorVariant || '1-color';
         const backgroundMode = asset.metadata?.background || (asset.id.includes('dark') ? 'dark' : 'light');
 
-        // Generate proper display name based on actual variant data
-        const displayName = `CIQ ${colorVariant === '1-color' ? 'Standard' : 'Hero'} ${backgroundMode === 'light' ? 'Light' : 'Dark'} Mode`;
-        const usageContext = colorVariant === '1-color'
-          ? (backgroundMode === 'light' ? 'general business use, presentations' : 'dark backgrounds, headers')
-          : (backgroundMode === 'light' ? 'major presentations, marketing materials' : 'dark hero sections, premium contexts');
+        // Generate proper display name for 1-color variants only
+        const displayName = `CIQ Standard ${backgroundMode === 'light' ? 'Light' : 'Dark'} Mode`;
+        const usageContext = backgroundMode === 'light'
+          ? 'general business use, presentations'
+          : 'dark backgrounds, headers';
 
         expandedAssets.push({
           ...asset,
