@@ -22,7 +22,7 @@ export interface VariantMetadata {
 }
 
 export interface CIQVariantMetadata {
-  colorVariant: '1-color' | '2-color';
+  colorVariant: '1-color'; // Only 1-color variants supported
   backgroundMode: 'light' | 'dark'; // Standardized field
   displayName: string;
   usageContext: string;
