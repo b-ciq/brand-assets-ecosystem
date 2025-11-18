@@ -39,7 +39,7 @@ def find_logo(product_name: str, variant: str = "", color_mode: str = "", format
 
     Args:
         product_name: Product name (fuzzball, warewulf, ascender, rlc-hardened, ciq, etc.)
-        variant: Logo variant (horizontal, vertical, symbol) or (1-color, 2-color) for CIQ
+        variant: Logo variant (horizontal, vertical, symbol) - CIQ logos only available in 1-color
         color_mode: Color mode (light, dark)
         format: File format (svg, png, jpg)
         size: Size (S, M, L or custom like "1024px")
