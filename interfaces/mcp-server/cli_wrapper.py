@@ -166,28 +166,6 @@ def enhanced_search(query: str, asset_data: Dict, patterns: Dict, show_all_varia
                 "type": "logo",
                 "size": "large",
                 "tags": ["company", "dark-mode"]
-            },
-            "2color_light": {
-                "url": "/assets/global/CIQ_logos/CIQ_logo_2clr_lightmode.svg",
-                "filename": "CIQ_logo_2clr_lightmode.svg",
-                "background": "light",
-                "color": "multicolor",
-                "layout": "horizontal",
-                "colorVariant": "2-color",
-                "type": "logo",
-                "size": "large",
-                "tags": ["company", "hero", "premium"]
-            },
-            "2color_dark": {
-                "url": "/assets/global/CIQ_logos/CIQ_logo_2clr_darkmode.svg",
-                "filename": "CIQ_logo_2clr_darkmode.svg",
-                "background": "dark",
-                "color": "multicolor",
-                "layout": "horizontal",
-                "colorVariant": "2-color",
-                "type": "logo",
-                "size": "large",
-                "tags": ["company", "hero", "dark-mode"]
             }
         }
         results['ciq'] = ciq_logos
