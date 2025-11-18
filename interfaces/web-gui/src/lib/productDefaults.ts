@@ -55,16 +55,14 @@ export const VARIANT_METADATA: Record<string, VariantMetadata[]> = {
   ]
 };
 
-// CIQ company logo variants - maps to 4 existing SVG files
+// CIQ company logo variants - maps to 2 existing SVG files (1-color only)
 // 1-color light mode is the preferred variant (dark logo for light backgrounds)
 export const CIQ_VARIANT_METADATA: CIQVariantMetadata[] = [
-  // Light mode variants (dark logos for light backgrounds)
+  // Light mode variant (dark logo for light backgrounds)
   { colorVariant: '1-color', backgroundMode: 'light', displayName: 'CIQ Standard', usageContext: 'general business use, presentations', isPrimary: true, priority: 1 },
-  { colorVariant: '2-color', backgroundMode: 'light', displayName: 'CIQ Hero', usageContext: 'major presentations, marketing materials', isPrimary: false, priority: 2 },
-  
-  // Dark mode variants (light logos for dark backgrounds)  
-  { colorVariant: '1-color', backgroundMode: 'dark', displayName: 'CIQ Standard (Dark)', usageContext: 'dark backgrounds, headers', isPrimary: false, priority: 3 },
-  { colorVariant: '2-color', backgroundMode: 'dark', displayName: 'CIQ Hero (Dark)', usageContext: 'dark hero sections, premium contexts', isPrimary: false, priority: 4 }
+
+  // Dark mode variant (light logo for dark backgrounds)
+  { colorVariant: '1-color', backgroundMode: 'dark', displayName: 'CIQ Standard (Dark)', usageContext: 'dark backgrounds, headers', isPrimary: false, priority: 2 }
 ];
 
 export const PRODUCT_DEFAULTS: Record<string, ProductDefaults> = {
