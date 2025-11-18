@@ -25,7 +25,7 @@ export interface Asset {
     backgroundMode?: 'light' | 'dark'; // 'light' = dark logo for light backgrounds, 'dark' = light logo for dark backgrounds
 
     // Company logos (CIQ) specific
-    colorVariant?: '1-color' | '2-color';
+    colorVariant?: '1-color'; // Only 1-color variants supported
 
     // Product logos (Fuzzball, etc.) specific
     variant?: 'horizontal' | 'vertical' | 'symbol';
