@@ -8,7 +8,7 @@ import { getVariantMetadata, getCIQVariantMetadata, isCIQCompanyLogo } from '@/l
 // Variant configuration interface
 interface VariantConfig {
   product: string;
-  variant?: 'horizontal' | 'vertical' | 'symbol' | '1-color' | '2-color';
+  variant?: 'horizontal' | 'vertical' | 'symbol' | '1-color';
   colorMode?: 'light' | 'dark';
   format?: 'svg' | 'png' | 'jpg';
   size?: string;
