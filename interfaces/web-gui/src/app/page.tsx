@@ -160,9 +160,9 @@ export default function Home() {
     if (product && (variant || colorMode || format || size || openModal === 'true')) {
       setVariantConfig({
         product,
-        variant: variant as any,
-        colorMode: colorMode as any,
-        format: format as any,
+        variant: variant as ('horizontal' | 'vertical' | 'symbol' | '1-color' | undefined),
+        colorMode: colorMode as ('light' | 'dark' | undefined),
+        format: format as ('svg' | 'png' | 'jpg' | undefined),
         size: size || undefined,
         openModal: openModal === 'true'
       });

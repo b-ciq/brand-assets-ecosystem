@@ -62,16 +62,17 @@ export default function AssetGrid({
       const colorModes: ('light' | 'dark')[] = ['light', 'dark'];
 
       if (isCIQCompanyLogo(productName)) {
-        // CIQ: CLI backend now provides only 1-color variants
-        // Use them directly instead of expanding from single asset
-        const colorVariant = asset.metadata?.colorVariant || '1-color';
-        const backgroundMode = asset.metadata?.background || (asset.id.includes('dark') ? 'dark' : 'light');
+        // CIQ: Backend provides separate assets for light/dark modes
+        // Don't multiply - just use the asset as-is with proper metadata
+        const backgroundMode = asset.metadata?.background ||
+          (asset.id.includes('dark') || asset.url?.includes('dark') ? 'dark' : 'light');
 
-        // Generate proper display name for 1-color variants only
-        const displayName = `CIQ Standard ${backgroundMode === 'light' ? 'Light' : 'Dark'} Mode`;
-        const usageContext = backgroundMode === 'light'
-          ? 'general business use, presentations'
-          : 'dark backgrounds, headers';
+        const ciqVariants = getCIQVariantMetadata();
+        const matchingVariant = ciqVariants.find(v => v.backgroundMode === backgroundMode);
+
+        const displayName = matchingVariant?.displayName || `CIQ Standard ${backgroundMode === 'dark' ? '(Dark)' : ''}`;
+        const usageContext = matchingVariant?.usageContext ||
+          (backgroundMode === 'light' ? 'general business use, presentations' : 'dark backgrounds, headers');
 
         expandedAssets.push({
           ...asset,
@@ -81,7 +82,7 @@ export default function AssetGrid({
           // Store variant config for click handling
           variantMetadata: {
             product: productName,
-            variant: colorVariant,
+            variant: '1-color',
             colorMode: backgroundMode
           }
         });
@@ -162,8 +163,8 @@ export default function AssetGrid({
             if (asset.variantMetadata) {
               const variantConfig: VariantConfig = {
                 product: asset.variantMetadata.product,
-                variant: asset.variantMetadata.variant as any,
-                colorMode: asset.variantMetadata.colorMode as any
+                variant: asset.variantMetadata.variant as ('horizontal' | 'vertical' | 'symbol' | '1-color' | undefined),
+                colorMode: asset.variantMetadata.colorMode as ('light' | 'dark' | undefined)
               };
               onAssetClick?.(asset, variantConfig);
             } else {
