@@ -2,13 +2,14 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Asset } from '@/types/asset';
-import { FileText, Settings, Zap } from 'lucide-react';
+import { FileText, Settings, Download } from 'lucide-react';
 import DownloadModalNew from './DownloadModalNew';
 import DocumentPreviewModal from './DocumentPreviewModal';
 import { QuickDownloadService } from '@/lib/quickDownload';
 import { getProductDefaults, getQuickDownloadDescription } from '@/lib/productDefaults';
 import { getAssetHandler } from '@/lib/assetDisplayHandlers';
 import { manipulateSvgColors } from '@/lib/svgColorTest';
+import { Button } from '@/components/ui/Button';
 
 interface VariantConfig {
   variant?: string;
@@ -203,14 +204,7 @@ export default function AssetCard({ asset, onClick, variantConfig, autoOpenModal
       onClick={handleCustomizeDownload}
       className="group cursor-pointer rounded-lg hover:shadow-lg transition-all duration-200 aspect-[3/4] relative overflow-hidden"
       style={{
-        backgroundColor: 'var(--quantic-color-gray-dark-mode-850)',
-        border: `1px solid var(--quantic-border-primary)`
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'var(--quantic-color-gray-dark-mode-600)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'var(--quantic-border-primary)';
+        backgroundColor: 'var(--quantic-color-gray-dark-mode-850)'
       }}
     >
       {/* Image container - 3x3 area */}
@@ -263,7 +257,7 @@ export default function AssetCard({ asset, onClick, variantConfig, autoOpenModal
       </div>
 
       {/* Sliding Panel - slides up from bottom on hover */}
-      <div className="absolute bottom-0 left-0 right-0 bg-black/90 backdrop-blur-md rounded-b-lg transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
+      <div className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-md rounded-b-md transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
         <div className="px-4 py-3 space-y-2">
           {/* Title */}
           <div className="text-white font-medium text-center text-sm">
@@ -277,42 +271,31 @@ export default function AssetCard({ asset, onClick, variantConfig, autoOpenModal
           
           {/* Buttons */}
           <div className="flex items-center justify-center gap-2">
-            <button
+            <Button
+              variant="primary"
+              size="28"
               onClick={handleQuickDownload}
               disabled={isQuickDownloading}
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-semibold text-sm transition-all duration-200 disabled:opacity-50"
-              style={{
-                backgroundColor: 'var(--quantic-color-brand-600)',
-                color: 'white'
-              }}
-            >
-              {isQuickDownloading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Downloading...
-                </>
+              icon={isQuickDownloading ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
-                <>
-                  <Zap size={16} />
-                  Download
-                </>
+                <Download />
               )}
-            </button>
-            
+              iconPosition="left"
+              title={isQuickDownloading ? 'Downloading...' : 'Quick download'}
+            />
+
             {/* Only show customize button for logos, not documents */}
             {asset.assetType !== 'document' && (
-              <button
+              <Button
+                variant="secondary"
+                size="28"
                 onClick={handleCustomizeDownload}
-                className="flex items-center justify-center aspect-square h-full rounded-md transition-all duration-200 border px-2"
-                style={{
-                  backgroundColor: 'var(--quantic-color-gray-dark-mode-700)',
-                  borderColor: 'var(--quantic-color-gray-dark-mode-600)',
-                  color: 'var(--quantic-color-gray-dark-mode-300)'
-                }}
-                title="Customize"
+                icon={<Settings />}
+                iconPosition="left"
               >
-                <Settings size={16} />
-              </button>
+                Configure
+              </Button>
             )}
           </div>
         </div>

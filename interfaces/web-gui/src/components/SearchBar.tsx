@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { SearchFilters } from '@/types/asset';
+import { Button } from '@/components/ui/Button';
 
 interface SearchBarProps {
   onSearch: (filters: SearchFilters) => void;
@@ -73,24 +74,16 @@ export default function SearchBar({ onSearch, isLoading = false }: SearchBarProp
             <option value="gif">GIF</option>
           </select>
           
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="44"
             disabled={isLoading}
-            className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              backgroundColor: 'var(--quantic-bg-brand-primary)',
-              color: 'var(--quantic-text-primary-on-brand)'
-            }}
-            onMouseEnter={(e) => {
-              if (!isLoading) e.currentTarget.style.backgroundColor = 'var(--quantic-bg-brand-primary-hover)';
-            }}
-            onMouseLeave={(e) => {
-              if (!isLoading) e.currentTarget.style.backgroundColor = 'var(--quantic-bg-brand-primary)';
-            }}
+            icon={<Search />}
+            iconPosition="left"
           >
-            <Search size={18} />
             {isLoading ? 'Searching...' : 'Search'}
-          </button>
+          </Button>
         </div>
       </form>
     </div>
