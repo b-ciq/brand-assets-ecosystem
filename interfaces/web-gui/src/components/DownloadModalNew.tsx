@@ -7,6 +7,7 @@ import { convertSvgToRaster, isSvgUrl, getFileExtension } from '@/lib/svgConvert
 import { manipulateSvgColors, BRAND_COLORS } from '@/lib/svgColorTest';
 import { getVariantMetadata, getPrimaryVariant, isCIQCompanyLogo, getCIQVariantMetadata, getPrimaryCIQVariant } from '@/lib/productDefaults';
 import { SizeChoice, SIZE_PRESETS, DEFAULT_SIZE, getSizePixels, SIZE_LABELS, CUSTOM_SIZE_CONSTRAINTS, validateCustomSize } from '@/lib/sizeConstants';
+import { Button } from '@/components/ui/Button';
 
 interface VariantConfig {
   variant?: string;
@@ -740,14 +741,17 @@ export default function DownloadModalNew({ asset, isOpen, onClose, variantConfig
         </div>
 
         {/* Download Button */}
-        <button
+        <Button
+          variant="primary"
+          size="44"
           onClick={handleDownload}
           disabled={isDownloading}
-          className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+          icon={<Download />}
+          iconPosition="left"
+          style={{ width: '100%' }}
         >
-          <Download size={16} />
-          {isDownloading ? 'PREPARING...' : 'DOWNLOAD'}
-        </button>
+          {isDownloading ? 'Preparing...' : 'Download'}
+        </Button>
       </div>
     </div>
   );

@@ -116,9 +116,12 @@ export default function Header({
         <div className="content-stretch flex gap-3 sm:gap-4 lg:gap-6 items-center justify-start relative shrink-0">
           <div className="h-[37px] relative shrink-0 w-[90px] flex items-center">
             <img
-              src="/assets/global/CIQ_logos/CIQ_logo_2clr_darkmode.svg"
+              src="/assets/global/CIQ_logos/CIQ_logo_1clr_darkmode.svg"
               alt="CIQ Logo"
               className="h-full w-auto object-contain"
+              style={{
+                filter: 'brightness(0) saturate(100%) invert(98%) sepia(0%) saturate(451%) hue-rotate(207deg) brightness(99%) contrast(97%)'
+              }}
             />
           </div>
           <div className="font-['Inter:Regular',_sans-serif] font-normal leading-[0] not-italic relative shrink-0 text-[#85888e] text-base sm:text-lg text-nowrap hidden sm:block">
@@ -192,10 +195,20 @@ export default function Header({
                 {query && (
                   <button
                     onClick={handleClearSearch}
-                    className="flex items-center justify-center shrink-0 w-5 h-5 text-[#717680] hover:text-[#cecfd2] transition-colors"
+                    className="flex items-center justify-center shrink-0 w-5 h-5 transition-colors"
+                    style={{
+                      color: 'var(--quantic-color-gray-light-mode-500)',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = 'var(--quantic-color-gray-dark-mode-300)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = 'var(--quantic-color-gray-light-mode-500)';
+                    }}
                     aria-label="Clear search"
                   >
-                    <CircleX size={20} />
+                    <CircleX size={20} style={{ flexShrink: 0 }} />
                   </button>
                 )}
               </div>
